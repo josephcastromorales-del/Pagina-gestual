@@ -2,77 +2,45 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>NOX - Voice AI</title>
+    <title>NOX - Voice Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            --bg-body: #f5f7f9;
-            --sidebar-dark: #121212;
-            --sidebar-active: #2196f3;
-            --text-main: #1a1a1a;
-            --text-muted: #7d7d7d;
-            --card-white: #ffffff;
+            --bg-body: #f5f7f9; --sidebar-dark: #121212; --sidebar-active: #2196f3;
+            --text-main: #1a1a1a; --card-white: #ffffff;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; color: var(--text-main); }
 
-        /* SIDEBAR NOX */
+        /* SIDEBAR */
         #sidebar { width: 220px; background: var(--sidebar-dark); color: #8a8a8a; display: flex; flex-direction: column; padding-top: 15px; flex-shrink: 0; }
-        .brand { padding: 15px 20px 30px; color: white; font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 1.4rem; letter-spacing: 3px; }
-        .menu-item { padding: 14px 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; position: relative; }
-        .menu-item:hover { color: white; }
-        .menu-item.active { background: #1a1a1a; color: white; }
-        .menu-item.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sidebar-active); }
+        .brand { padding: 15px 20px 30px; color: white; font-weight: bold; font-size: 1.4rem; letter-spacing: 3px; }
+        .menu-item { padding: 14px 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
+        .menu-item.active { background: #1a1a1a; color: white; border-left: 4px solid var(--sidebar-active); }
 
-        /* CONTENIDO PRINCIPAL */
+        /* CONTENIDO */
         #main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        header { height: 65px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 40px; justify-content: space-between; z-index: 10; }
+        header { height: 65px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 40px; }
+        #main-content { padding: 40px; overflow-y: auto; flex-grow: 1; }
 
-        #main-content { padding: 40px; overflow-y: scroll; flex-grow: 1; scroll-behavior: smooth; }
-
-        /* BUSCADOR GLASSMORPHISM */
-        #search-container {
-            position: absolute; top: 65px; left: 0; width: 100%; height: 0;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            z-index: 50; overflow: hidden;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0;
-        }
-        #search-container.open { height: 120px; opacity: 1; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        #search-input { 
-            background: white; border: 1px solid #ddd; padding: 15px 35px; 
-            border-radius: 50px; width: 60%; font-size: 1.1rem; outline: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
+        /* FORMULARIO AGREGAR */
+        .form-container { max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.3s; font-size: 1rem; }
+        input:focus, select:focus { border-color: var(--sidebar-active); }
+        .active-input { border-color: var(--sidebar-active) !important; background: #f0f7ff; }
 
         /* PRODUCTOS */
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
-        .product-card { 
-            background: var(--card-white); border-radius: 12px; padding: 40px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; 
-            min-height: 250px; transition: 0.3s; 
-        }
-        .product-card.hidden { display: none; }
-        .card-label { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
-        .price-badge { position: absolute; bottom: 35px; right: 35px; padding: 8px 22px; border-radius: 50px; background: #1a1a1a; color: white; font-weight: bold; }
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .product-card { background: white; padding: 30px; border-radius: 15px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .price-badge { position: absolute; bottom: 20px; right: 20px; font-weight: bold; color: var(--sidebar-active); }
 
-        /* MODAL DE COMPRA */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        #modal { background: white; padding: 40px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        .modal-btns { display: flex; gap: 10px; justify-content: center; margin-top: 25px; }
-        .btn { padding: 12px 25px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-confirm { background: var(--sidebar-active); color: white; }
-        .btn-cancel { background: #f1f5f9; color: #64748b; }
-
-        /* STATUS Y NOTIFICACIONES */
-        #status-ui { position: fixed; bottom: 25px; left: 240px; background: white; padding: 10px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; }
+        /* STATUS */
+        #status-ui { position: fixed; bottom: 25px; left: 240px; background: white; padding: 10px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; z-index: 100; }
         .dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
-        .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
-
-        #notification-bar { position: fixed; top: 20px; right: -350px; width: 280px; background: #1a1a1a; color: white; padding: 20px; border-radius: 12px; transition: 0.5s; z-index: 5000; border-left: 5px solid #10b981; }
+        .dot.online { background: #10b981; }
+        #notification-bar { position: fixed; top: 20px; right: -350px; width: 280px; background: #1a1a1a; color: white; padding: 20px; border-radius: 12px; transition: 0.5s; z-index: 5000; }
         #notification-bar.show { right: 20px; }
     </style>
 </head>
@@ -80,36 +48,18 @@
 
     <nav id="sidebar">
         <div class="brand">NOX</div>
-        <div class="menu-item active"><i class="fa-solid fa-microchip"></i> Productos</div>
-        <div class="menu-item"><i class="fa-solid fa-list"></i> Catálogo</div>
-        <div class="menu-item"><i class="fa-solid fa-keyboard"></i> Periféricos</div>
-        <div class="menu-item" style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;"><i class="fa-solid fa-terminal"></i> Controlar sistema</div>
+        <div class="menu-item active" onclick="loadContent('Productos')">Productos</div>
+        <div class="menu-item" onclick="loadContent('Catálogo')">Catálogo</div>
+        <div class="menu-item" onclick="loadContent('Periféricos')">Periféricos</div>
+        <div class="menu-item" style="color: #5cc0ff" onclick="loadContent('Agregar producto')">Agregar producto</div>
+        <div class="menu-item" style="margin-top: auto; border-top: 1px solid #222;" onclick="loadContent('Controlar sistema')">Controlar sistema</div>
     </nav>
 
     <div id="main-wrapper">
-        <div id="search-container">
-            <input type="text" id="search-input" readonly placeholder="Dictado por voz...">
-        </div>
-
-        <header>
-            <h1 id="view-title">Productos</h1>
-            <div><i class="fa-solid fa-bars" style="color: #888;"></i></div>
-        </header>
-
+        <header><h1 id="view-title">Productos</h1></header>
         <main id="main-content">
             <div id="products-grid"></div>
         </main>
-    </div>
-
-    <div id="modal-overlay">
-        <div id="modal">
-            <h2 id="modal-title">Confirmar Compra</h2>
-            <p id="modal-desc" style="margin: 20px 0; color: #64748b;">¿Deseas confirmar la compra mediante NOX?</p>
-            <div class="modal-btns">
-                <button class="btn btn-confirm" onclick="finishOrder()">Confirmar</button>
-                <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
-            </div>
-        </div>
     </div>
 
     <div id="status-ui">
@@ -117,68 +67,72 @@
         <span id="status-text">Di "Activar sistema"</span>
     </div>
 
-    <div id="notification-bar">✅ Pedido Procesado con éxito</div>
+    <div id="notification-bar">✅ Acción completada</div>
 
     <script>
-        const catalog = {
-            "productos": { prefix: "NOX Core ", desc: "Procesamiento de alto rendimiento." },
-            "catálogo": { prefix: "Module ", desc: "Componentes integrados NOX." },
-            "periféricos": { prefix: "Gear ", desc: "Accesorios optimizados." }
-        };
-
         let systemActive = false;
-        let isSearching = false;
-        let modalOpen = false;
+        let activeField = null;
+
+        const catalogData = {
+            "productos": [{name: "NOX Ultra", price: "899", section: "Productos"}],
+            "catálogo": [],
+            "periféricos": []
+        };
 
         function loadContent(section) {
             const grid = document.getElementById('products-grid');
-            const title = document.getElementById('view-title');
+            document.getElementById('view-title').innerText = section;
             grid.innerHTML = "";
-            title.innerText = section;
+            activeField = null;
 
-            if (section.toLowerCase() === "controlar sistema") {
+            if (section === "Agregar producto") {
                 grid.style.display = "block";
                 grid.innerHTML = `
-                    <div style="background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px;">
-                        <h4>Comandos de Compra</h4>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Comprar producto [Número]"</span> para iniciar.</p>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Confirmar"</span> o <span style="font-weight:bold; color:var(--sidebar-active);">"Cancelar"</span> en la ventana.</p>
-                    </div>
-                    <div style="background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px;">
-                        <h4>Comandos de Navegación</h4>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Ir a [Sección]"</span> para moverte.</p>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Buscar"</span> para activar el vidrio esmerilado.</p>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Apagar buscador"</span> para ocultar el panel.</p>
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Nombre del Producto (Di: "Editar nombre")</label>
+                            <input type="text" id="add-name" placeholder="Esperando dictado...">
+                        </div>
+                        <div class="form-group">
+                            <label>Precio (Di: "Editar precio")</label>
+                            <input type="number" id="add-price" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Sección (Di: "Editar sección elegir 1, 2 o 3")</label>
+                            <select id="add-section">
+                                <option value="productos">1. Productos</option>
+                                <option value="catálogo">2. Catálogo</option>
+                                <option value="periféricos">3. Periféricos</option>
+                            </select>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #666;">Comando final: <b>"Guardar producto"</b></p>
                     </div>`;
                 return;
             }
 
             grid.style.display = "grid";
-            const data = catalog[section.toLowerCase()] || catalog["productos"];
-            for (let i = 1; i <= 15; i++) {
+            const key = section.toLowerCase();
+            const items = catalogData[key] || [];
+            items.forEach(item => {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <span class="card-label">NOX-REF-${i}</span>
-                        <h3>${data.prefix}${i}</h3>
-                        <p>${data.desc}</p>
-                        <div class="price-badge">$${(150 * i).toFixed(2)}</div>
+                        <h3>${item.name}</h3>
+                        <p>Categoría: ${item.section}</p>
+                        <div class="price-badge">$${item.price}</div>
                     </div>`;
-            }
+            });
         }
 
-        loadContent("productos");
+        loadContent("Productos");
 
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
         recognition.continuous = true;
-
         window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            const input = document.getElementById('search-input');
-            const container = document.getElementById('search-container');
-
+            
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
@@ -188,64 +142,66 @@
             if (command.includes("apagar sistema")) {
                 systemActive = false;
                 document.getElementById('status-dot').classList.remove('online');
-                document.getElementById('status-text').innerText = "Di 'Activar sistema'";
                 return;
             }
 
             if (!systemActive) return;
 
-            // LÓGICA DE MODAL (CONFIRMAR/CANCELAR)
-            if (modalOpen) {
-                if (command.includes("confirmar")) { finishOrder(); return; }
-                if (command.includes("cancelar")) { closeModal(); return; }
-            }
-
-            // BUSQUEDA
-            if (command === "buscar") { isSearching = true; container.classList.add('open'); return; }
-            if (command === "apagar buscador") { isSearching = false; container.classList.remove('open'); return; }
-
-            if (isSearching) {
-                if (command === "borrar todo") {
-                    input.value = "";
-                    document.querySelectorAll('.product-card').forEach(c => c.classList.remove('hidden'));
-                } else if (!command.includes("ir a") && !command.includes("comprar")) {
-                    input.value = command;
-                    document.querySelectorAll('.product-card').forEach(card => {
-                        card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(command));
-                    });
-                }
-            }
-
             // NAVEGACIÓN
-            if (command.includes("ir a")) {
-                document.querySelectorAll('.menu-item').forEach(item => {
+            if (command.includes("ir a") || command.includes("agregar producto") || command.includes("controlar sistema")) {
+                const items = document.querySelectorAll('.menu-item');
+                items.forEach(item => {
                     if (command.includes(item.innerText.toLowerCase())) {
-                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                        items.forEach(i => i.classList.remove('active'));
                         item.classList.add('active');
-                        loadContent(item.innerText.trim());
+                        loadContent(item.innerText);
                     }
                 });
             }
 
-            // COMPRA POR PRODUCTO
-            if (command.includes("comprar producto")) {
-                const num = command.match(/\d+/);
-                if (num) {
-                    document.getElementById('modal-title').innerText = "Comprar Producto " + num[0];
-                    document.getElementById('modal-overlay').style.display = "flex";
-                    modalOpen = true;
+            // LÓGICA DE FORMULARIO "AGREGAR"
+            if (document.getElementById('add-name')) {
+                const inputName = document.getElementById('add-name');
+                const inputPrice = document.getElementById('add-price');
+                const selectSec = document.getElementById('add-section');
+
+                if (command === "editar nombre") {
+                    activeField = "name";
+                    inputName.classList.add('active-input');
+                    inputPrice.classList.remove('active-input');
+                } 
+                else if (command === "editar precio") {
+                    activeField = "price";
+                    inputPrice.classList.add('active-input');
+                    inputName.classList.remove('active-input');
+                }
+                else if (command.includes("editar sección elegir")) {
+                    const num = command.match(/\d+/);
+                    if (num) selectSec.selectedIndex = parseInt(num[0]) - 1;
+                }
+                else if (command === "guardar producto") {
+                    const newProd = {
+                        name: inputName.value,
+                        price: inputPrice.value,
+                        section: selectSec.options[selectSec.selectedIndex].text
+                    };
+                    catalogData[selectSec.value].push(newProd);
+                    showNotify("✅ Producto guardado en " + newProd.section);
+                    loadContent(newProd.section);
+                }
+                else if (activeField === "name") {
+                    inputName.value = command;
+                }
+                else if (activeField === "price") {
+                    const price = command.match(/\d+/);
+                    if (price) inputPrice.value = price[0];
                 }
             }
         };
 
-        function closeModal() { 
-            document.getElementById('modal-overlay').style.display = "none"; 
-            modalOpen = false;
-        }
-
-        function finishOrder() {
-            closeModal();
+        function showNotify(msg) {
             const bar = document.getElementById('notification-bar');
+            bar.innerText = msg;
             bar.classList.add('show');
             setTimeout(() => bar.classList.remove('show'), 3000);
         }
