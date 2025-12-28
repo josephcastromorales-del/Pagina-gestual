@@ -2,114 +2,152 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore - Voice Navigation</title>
+    <title>TechStore - Voice AI</title>
     <style>
-        :root { --bg: #0a0a0a; --sidebar-bg: #111; --accent: #00ffcc; --text: #fff; }
+        :root { --bg: #0a0a0a; --sidebar: #111; --accent: #00ffcc; --text: #fff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; }
 
         /* SIDEBAR */
-        #sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid #333; padding: 30px 20px; }
-        #sidebar h2 { color: var(--accent); margin-bottom: 30px; font-size: 1.2rem; letter-spacing: 2px; }
-        
+        #sidebar { width: 250px; background: var(--sidebar); border-right: 1px solid #333; padding: 30px 20px; }
         .menu-item { 
-            padding: 15px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; 
-            transition: 0.3s; list-style: none; border-left: 3px solid transparent;
-            text-transform: capitalize; 
+            padding: 15px; margin-bottom: 8px; border-radius: 8px; list-style: none;
+            transition: 0.3s; border-left: 3px solid transparent; color: #888;
         }
-        .menu-item:hover, .menu-item.active { 
-            background: rgba(0, 255, 204, 0.1); border-left-color: var(--accent); color: var(--accent); 
-        }
+        .menu-item.active { background: rgba(0, 255, 204, 0.1); border-left-color: var(--accent); color: var(--accent); }
 
         /* CONTENIDO */
         #main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .product-card { background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; }
-        .placeholder { height: 120px; background: #252525; border-radius: 8px; margin-bottom: 15px; }
-
-        /* UI de Voz */
-        #voice-status { 
-            position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; 
-            background: var(--accent); color: black; border-radius: 50px; 
-            font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(0,255,204,0.4);
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        
+        .product-card { 
+            background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; 
+            transition: 0.3s; position: relative;
         }
-        #listening-indicator { display: none; margin-left: 10px; font-size: 0.8rem; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        .product-card.last-bought { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,255,204,0.2); }
+        
+        .badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
+        .placeholder { height: 150px; background: #222; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #444; }
+
+        /* UI DE ESTADO */
+        #status-bar { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 10px 30px; background: #222; border-radius: 50px; border: 1px solid var(--accent);
+            display: flex; align-items: center; gap: 15px; z-index: 1000;
+        }
+        .dot { width: 10px; height: 10px; background: gray; border-radius: 50%; }
+        .dot.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <h2>TechStore</h2>
+        <h2 style="color:var(--accent); margin-bottom: 30px;">TECH STORE</h2>
         <ul id="menu-list">
             <li class="menu-item active">Hardware</li>
             <li class="menu-item">Software</li>
             <li class="menu-item">Periféricos</li>
             <li class="menu-item">Cámaras</li>
-            <li class="menu-item">Configuración</li>
         </ul>
     </nav>
 
     <main id="main-content">
-        <header style="margin-bottom: 30px;">
-            <h1 id="current-category">Sección: Hardware</h1>
-        </header>
+        <h1 id="section-title" style="margin-bottom: 30px;">Sección: Hardware</h1>
         <div id="products-grid">
-            <div class="product-card"><div class="placeholder"></div><h3>Item Alpha</h3><p>$99</p></div>
-            <div class="product-card"><div class="placeholder"></div><h3>Item Beta</h3><p>$149</p></div>
+            <div class="product-card" data-index="1">
+                <span class="badge">PROD 1</span>
+                <div class="placeholder">IMAGEN</div>
+                <h3>Procesador Ryzen</h3>
+                <p>$300</p>
+            </div>
+            <div class="product-card" data-index="2">
+                <span class="badge">PROD 2</span>
+                <div class="placeholder">IMAGEN</div>
+                <h3>Tarjeta Gráfica</h3>
+                <p>$600</p>
+            </div>
         </div>
     </main>
 
-    <div id="voice-status" onclick="startListening()">
-        🎤 ACTIVAR VOZ <span id="listening-indicator">ESCUCHANDO...</span>
+    <div id="status-bar">
+        <div id="mic-dot" class="dot"></div>
+        <span id="mic-text">Diga "Ir a..." o "Comprar producto..."</span>
     </div>
 
     <script>
+        // Configuración de Reconocimiento de Voz
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
-        recognition.continuous = false;
+        recognition.continuous = true; // Escucha constante
+        recognition.interimResults = false;
 
-        function startListening() {
-            recognition.start();
-            document.getElementById('listening-indicator').style.display = 'inline';
-        }
+        // Iniciar al cargar
+        window.onload = () => recognition.start();
+
+        recognition.onstart = () => {
+            document.getElementById('mic-dot').classList.add('active');
+        };
 
         recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript.toLowerCase();
-            console.log("Escuché:", transcript);
-            
-            // --- LÓGICA DINÁMICA ---
-            // Obtenemos todos los elementos del menú actuales
-            const items = document.querySelectorAll('.menu-item');
-            
-            items.forEach(item => {
-                const categoryName = item.innerText.toLowerCase();
-                
-                // Si lo que dije está incluido en el nombre de la categoría
-                if (transcript.includes(categoryName)) {
-                    activateCategory(item);
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.toLowerCase().trim();
+            console.log("Comando recibido:", command);
+
+            // 1. Lógica de NAVEGACIÓN: "Ir a [Sección]"
+            if (command.includes("ir a")) {
+                const sections = document.querySelectorAll('.menu-item');
+                sections.forEach(sec => {
+                    if (command.includes(sec.innerText.toLowerCase())) {
+                        changeSection(sec);
+                    }
+                });
+            }
+
+            // 2. Lógica de COMPRA: "Comprar producto [Número]"
+            if (command.includes("comprar el producto") || command.includes("comprar producto")) {
+                // Extraer el número del comando
+                const numbers = { "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "1": 1, "2": 2, "3": 3 };
+                let targetId = null;
+
+                for (let key in numbers) {
+                    if (command.includes(key)) {
+                        targetId = numbers[key];
+                        break;
+                    }
                 }
-            });
-            
-            document.getElementById('listening-indicator').style.display = 'none';
+
+                if (targetId) {
+                    executePurchase(targetId);
+                }
+            }
         };
 
-        function activateCategory(element) {
-            // Quitar clase activa a todos
+        function changeSection(element) {
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            // Ponerla al seleccionado
             element.classList.add('active');
-            // Cambiar el título de la página
-            document.getElementById('current-category').innerText = "Sección: " + element.innerText;
+            document.getElementById('section-title').innerText = "Sección: " + element.innerText;
             
-            // Efecto visual de confirmación
-            element.style.transform = "scale(1.1)";
-            setTimeout(() => element.style.transform = "scale(1)", 200);
+            // Simulación de cambio de productos (puedes añadir lógica real aquí)
+            console.log("Navegando a:", element.innerText);
         }
 
-        recognition.onerror = () => {
-            document.getElementById('listening-indicator').style.display = 'none';
-        };
+        function executePurchase(id) {
+            // Busca el producto con ese ID dentro de la sección actual
+            const product = document.querySelector(`.product-card[data-index="${id}"]`);
+            
+            if (product) {
+                // Efecto visual de compra
+                product.classList.add('last-bought');
+                alert("🛒 ¡Has comprado el Producto " + id + " de la sección " + document.querySelector('.menu-item.active').innerText + "!");
+                setTimeout(() => product.classList.remove('last-bought'), 2000);
+            } else {
+                console.log("Producto no encontrado en esta vista.");
+            }
+        }
+
+        // Reiniciar si se detiene por error
+        recognition.onend = () => recognition.start();
     </script>
 </body>
 </html>
