@@ -59,12 +59,12 @@
         .card-label { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
         .price-badge { position: absolute; bottom: 35px; right: 35px; padding: 8px 22px; border-radius: 50px; background: #1a1a1a; color: white; font-weight: bold; }
 
-        /* NUEVOS ESTILOS: FORMULARIO AGREGAR */
+        /* FORMULARIO AGREGAR */
         .form-container { max-width: 500px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; }
         .form-input { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; outline: none; font-size: 1rem; transition: 0.3s; }
-        .form-input.active-field { border-color: var(--sidebar-active); background: #f0f7ff; }
+        .form-input.active-field { border-color: var(--sidebar-active); background: #f0f7ff; box-shadow: 0 0 10px rgba(33, 150, 243, 0.1); }
 
         /* MODAL DE COMPRA */
         #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 3000; }
@@ -137,7 +137,7 @@
         let systemActive = false;
         let isSearching = false;
         let modalOpen = false;
-        let currentEditingField = null; // Para saber qué input llenar
+        let currentEditingField = null; 
 
         function loadContent(section) {
             const grid = document.getElementById('products-grid');
@@ -150,13 +150,9 @@
                 grid.style.display = "block";
                 grid.innerHTML = `
                     <div style="background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px;">
-                        <h4>Nuevos Comandos: Agregar Producto</h4>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Editar nombre"</span>, <span style="font-weight:bold; color:var(--sidebar-active);">"Editar precio"</span> o <span style="font-weight:bold; color:var(--sidebar-active);">"Editar sección elegir [1, 2 o 3]"</span>.</p>
-                        <p>Al terminar di <span style="font-weight:bold; color:var(--sidebar-active);">"Guardar producto"</span>.</p>
-                    </div>
-                    <div style="background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px;">
-                        <h4>Comandos de Compra</h4>
-                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Comprar producto [Número]"</span>.</p>
+                        <h4>Nuevos Comandos: Navegación de Formulario</h4>
+                        <p>Di <span style="font-weight:bold; color:var(--sidebar-active);">"Siguiente"</span> para saltar al próximo campo automáticamente.</p>
+                        <p>Ejemplo: "Editar nombre" -> (dictas) -> "Siguiente" -> (dictas precio).</p>
                     </div>`;
                 return;
             }
@@ -171,7 +167,7 @@
                         </div>
                         <div class="form-group">
                             <label>Precio</label>
-                            <input type="text" id="new-price" class="form-input" placeholder="Di 'Editar precio'...">
+                            <input type="text" id="new-price" class="form-input" placeholder="Precio...">
                         </div>
                         <div class="form-group">
                             <label>Sección de almacenamiento</label>
@@ -227,24 +223,32 @@
 
             if (!systemActive) return;
 
-            // MODAL COMPRA
-            if (modalOpen) {
-                if (command.includes("confirmar")) { finishOrder(); return; }
-                if (command.includes("cancelar")) { closeModal(); return; }
-            }
-
-            // LÓGICA DE AGREGAR PRODUCTO (EDICIÓN DE CAMPOS)
+            // LÓGICA DE AGREGAR PRODUCTO
             if (document.getElementById('new-name')) {
+                // COMANDO SIGUIENTE
+                if (command === "siguiente") {
+                    if (currentEditingField === "name") {
+                        currentEditingField = "price";
+                        document.getElementById('new-price').classList.add('active-field');
+                        document.getElementById('new-name').classList.remove('active-field');
+                    } else if (currentEditingField === "price") {
+                        currentEditingField = "section";
+                        document.getElementById('new-section').classList.add('active-field');
+                        document.getElementById('new-price').classList.remove('active-field');
+                    }
+                    return;
+                }
+
                 if (command === "editar nombre") {
                     currentEditingField = "name";
+                    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('active-field'));
                     document.getElementById('new-name').classList.add('active-field');
-                    document.getElementById('new-price').classList.remove('active-field');
                     return;
                 }
                 if (command === "editar precio") {
                     currentEditingField = "price";
+                    document.querySelectorAll('.form-input').forEach(i => i.classList.remove('active-field'));
                     document.getElementById('new-price').classList.add('active-field');
-                    document.getElementById('new-name').classList.remove('active-field');
                     return;
                 }
                 if (command.includes("editar sección elegir")) {
@@ -257,7 +261,7 @@
                     return;
                 }
 
-                // Escribir en el campo seleccionado
+                // DICTADO
                 if (currentEditingField === "name") {
                     document.getElementById('new-name').value = command;
                     return;
@@ -269,7 +273,7 @@
                 }
             }
 
-            // BUSQUEDA
+            // RESTO DE COMANDOS (BUSQUEDA, NAVEGACIÓN, COMPRA)
             if (command === "buscar") { isSearching = true; container.classList.add('open'); return; }
             if (command === "apagar buscador") { isSearching = false; container.classList.remove('open'); return; }
 
@@ -277,7 +281,7 @@
                 if (command === "borrar todo") {
                     input.value = "";
                     document.querySelectorAll('.product-card').forEach(c => c.classList.remove('hidden'));
-                } else if (!command.includes("ir a") && !command.includes("comprar") && !command.includes("editar")) {
+                } else if (!command.includes("ir a") && !command.includes("comprar") && !command.includes("editar") && !command.includes("siguiente")) {
                     input.value = command;
                     document.querySelectorAll('.product-card').forEach(card => {
                         card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(command));
@@ -285,7 +289,6 @@
                 }
             }
 
-            // NAVEGACIÓN
             if (command.includes("ir a") || command.includes("agregar producto") || command.includes("controlar sistema")) {
                 document.querySelectorAll('.menu-item').forEach(item => {
                     if (command.includes(item.innerText.toLowerCase())) {
@@ -296,7 +299,6 @@
                 });
             }
 
-            // COMPRA
             if (command.includes("comprar producto")) {
                 const num = command.match(/\d+/);
                 if (num) {
