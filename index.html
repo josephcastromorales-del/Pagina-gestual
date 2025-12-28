@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - Glass UI Edition</title>
+    <title>NOX - Voice AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
@@ -17,85 +17,80 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; color: var(--text-main); }
 
-        /* SIDEBAR */
+        /* SIDEBAR NOX */
         #sidebar { width: 220px; background: var(--sidebar-dark); color: #8a8a8a; display: flex; flex-direction: column; padding-top: 15px; flex-shrink: 0; }
-        .brand { padding: 15px 20px 30px; color: white; font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
+        .brand { padding: 15px 20px 30px; color: white; font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 1.4rem; letter-spacing: 3px; }
         .menu-item { padding: 14px 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; position: relative; }
         .menu-item:hover { color: white; }
         .menu-item.active { background: #1a1a1a; color: white; }
         .menu-item.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sidebar-active); }
 
-        /* CONTENIDO */
+        /* CONTENIDO PRINCIPAL */
         #main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         header { height: 65px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 40px; justify-content: space-between; z-index: 10; }
 
         #main-content { padding: 40px; overflow-y: scroll; flex-grow: 1; scroll-behavior: smooth; }
 
-        /* BUSCADOR VIDRIO BORROSO (GLASSMORPHISM) */
-        #search-overlay {
+        /* BUSCADOR GLASSMORPHISM */
+        #search-container {
             position: absolute; top: 65px; left: 0; width: 100%; height: 0;
             background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(12px); /* El efecto de vidrio */
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             z-index: 50; overflow: hidden;
-            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
+            opacity: 0;
         }
-        #search-overlay.open { height: 100px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        #search-container.open { height: 120px; opacity: 1; border-bottom: 1px solid rgba(0,0,0,0.05); }
         #search-input { 
-            background: white; border: 1px solid #ddd; padding: 15px 30px; 
-            border-radius: 50px; width: 60%; font-size: 1.2rem; outline: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            background: white; border: 1px solid #ddd; padding: 15px 35px; 
+            border-radius: 50px; width: 60%; font-size: 1.1rem; outline: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
-        /* TARJETAS */
+        /* PRODUCTOS */
         #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
         .product-card { 
             background: var(--card-white); border-radius: 12px; padding: 40px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; 
             min-height: 250px; transition: 0.3s; 
         }
+        .product-card.hidden { display: none; }
         .card-label { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
-        .price-badge { position: absolute; bottom: 35px; right: 35px; padding: 8px 22px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; }
-        .price-black { background: #1a1a1a; color: white; }
-        .price-green { background: #e2f2e9; color: #2d6a4f; }
-        .price-red { background: #ff7070; color: white; }
+        .price-badge { position: absolute; bottom: 35px; right: 35px; padding: 8px 22px; border-radius: 50px; background: #1a1a1a; color: white; font-weight: bold; }
 
-        /* CONTROLAR SISTEMA - FUNCIONES */
-        .help-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .help-card { background: white; padding: 25px; border-radius: 15px; border-top: 4px solid var(--sidebar-active); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .help-card h4 { margin-bottom: 10px; color: var(--sidebar-active); display: flex; align-items: center; gap: 10px; }
-        .cmd-tag { font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; color: #333; }
+        /* CONTROLAR SISTEMA */
+        .help-card { background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .cmd-tag { font-weight: bold; color: var(--sidebar-active); background: rgba(33, 150, 243, 0.1); padding: 2px 8px; border-radius: 4px; }
 
-        /* STATUS UI */
+        /* STATUS */
         #status-ui { position: fixed; bottom: 25px; left: 240px; background: white; padding: 10px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; }
-        .dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; transition: 0.3s; }
+        .dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
         .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
 
-        #notification-bar { position: fixed; top: 20px; right: -350px; width: 280px; background: #1a1a1a; color: white; padding: 20px; border-radius: 12px; font-weight: bold; transition: 0.5s; z-index: 5000; }
+        #notification-bar { position: fixed; top: 20px; right: -350px; width: 280px; background: #1a1a1a; color: white; padding: 20px; border-radius: 12px; transition: 0.5s; z-index: 5000; }
         #notification-bar.show { right: 20px; }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="brand"><i class="fa-solid fa-microchip"></i> TECH CORE</div>
-        <div class="menu-item active"><i class="fa-solid fa-box"></i> Productos</div>
+        <div class="brand">NOX</div>
+        <div class="menu-item active"><i class="fa-solid fa-microchip"></i> Productos</div>
         <div class="menu-item"><i class="fa-solid fa-list"></i> Catálogo</div>
         <div class="menu-item"><i class="fa-solid fa-keyboard"></i> Periféricos</div>
         <div class="menu-item" style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;"><i class="fa-solid fa-terminal"></i> Controlar sistema</div>
     </nav>
 
     <div id="main-wrapper">
-        <div id="search-overlay">
-            <input type="text" id="search-input" readonly placeholder="Escuchando búsqueda...">
+        <div id="search-container">
+            <input type="text" id="search-input" readonly placeholder="Dictado por voz...">
         </div>
 
         <header>
             <h1 id="view-title">Productos</h1>
             <div>
-                <i class="fa-regular fa-star" style="margin-right: 15px; color: #888;"></i>
-                <i class="fa-solid fa-bars" style="color: #888;"></i>
+                <i class="fa-solid fa-bars" style="color: #888; font-size: 1.2rem;"></i>
             </div>
         </header>
 
@@ -113,9 +108,9 @@
 
     <script>
         const catalog = {
-            "productos": { prefix: "Workstation ", desc: "Potencia para diseño profesional.", colors: ["price-black"] },
-            "catálogo": { prefix: "Hardware ", desc: "Componentes de servidor.", colors: ["price-green"] },
-            "periféricos": { prefix: "Gaming ", desc: "Baja latencia inalámbrica.", colors: ["price-red"] }
+            "productos": { prefix: "NOX Core ", desc: "Procesamiento de alto rendimiento." },
+            "catálogo": { prefix: "Module ", desc: "Componentes integrados NOX." },
+            "periféricos": { prefix: "Gear ", desc: "Accesorios optimizados." }
         };
 
         function loadContent(section) {
@@ -125,48 +120,34 @@
             title.innerText = section;
 
             if (section.toLowerCase() === "controlar sistema") {
+                document.getElementById('search-container').classList.remove('open');
                 grid.style.display = "block";
                 grid.innerHTML = `
-                    <div class="help-container">
-                        <div class="help-card">
-                            <h4><i class="fa-solid fa-power-off"></i> Energía</h4>
-                            <p>Di <span class="cmd-tag">Activar sistema</span> para despertar al asistente.</p>
-                            <p style="margin-top:10px;">Di <span class="cmd-tag">Apagar sistema</span> para dormirlo.</p>
-                        </div>
-                        <div class="help-card">
-                            <h4><i class="fa-solid fa-magnifying-glass"></i> Búsqueda</h4>
-                            <p>Di <span class="cmd-tag">Buscar</span> para abrir el panel de vidrio.</p>
-                            <p style="margin-top:10px;">Di <span class="cmd-tag">Apagar buscador</span> para cerrar.</p>
-                        </div>
-                        <div class="help-card">
-                            <h4><i class="fa-solid fa-arrows-up-down"></i> Navegación</h4>
-                            <p>Di <span class="cmd-tag">Ir a [Sección]</span> para cambiar de vista.</p>
-                            <p style="margin-top:10px;">Di <span class="cmd-tag">Sube</span> o <span class="cmd-tag">Baja</span> para deslizar.</p>
-                        </div>
-                        <div class="help-card">
-                            <h4><i class="fa-solid fa-cart-shopping"></i> Compras</h4>
-                            <p>Di <span class="cmd-tag">Comprar producto [Número]</span> para abrir pedido.</p>
-                            <p style="margin-top:10px;">Di <span class="cmd-tag">Confirmar</span> para finalizar.</p>
-                        </div>
-                    </div>`;
+                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Despierta a NOX.</div>
+                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre el buscador de vidrio.</div>
+                    <div class="help-card"><span class="cmd-tag">Apagar buscador</span> Cierra el panel y limpia filtros.</div>
+                    <div class="help-card"><span class="cmd-tag">Borrar / Borrar todo</span> Edita el texto de búsqueda.</div>
+                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Navega por el menú.</div>
+                `;
                 return;
             }
 
             grid.style.display = "grid";
             const data = catalog[section.toLowerCase()] || catalog["productos"];
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 15; i++) {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <span class="card-label">product card</span>
+                        <span class="card-label">nox product</span>
                         <h3>${data.prefix}${i}</h3>
                         <p>${data.desc}</p>
-                        <div class="price-badge ${data.colors[0]}">$${(100 * i).toFixed(2)}</div>
+                        <div class="price-badge">$${(Math.random()*500 + 100).toFixed(2)}</div>
                     </div>`;
             }
         }
 
         loadContent("productos");
 
+        // --- LÓGICA DE VOZ INTEGRADA ---
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
         recognition.continuous = true;
@@ -179,13 +160,13 @@
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
             const input = document.getElementById('search-input');
-            const overlay = document.getElementById('search-overlay');
+            const container = document.getElementById('search-container');
 
-            // SISTEMA ON/OFF
+            // SISTEMA
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Sistema Escuchando";
+                document.getElementById('status-text').innerText = "NOX Online";
                 return;
             }
             if (command.includes("apagar sistema")) {
@@ -197,31 +178,32 @@
 
             if (!systemActive) return;
 
-            // BUSCADOR CON VIDRIO BORROSO
+            // BUSCADOR (Lógica solicitada)
             if (command === "buscar") {
                 isSearching = true;
-                overlay.classList.add('open');
+                container.classList.add('open');
                 return;
             }
             if (command === "apagar buscador") {
                 isSearching = false;
-                overlay.classList.remove('open');
+                container.classList.remove('open');
                 input.value = "";
-                // Resetear visibilidad de productos
-                document.querySelectorAll('.product-card').forEach(c => c.style.display = "block");
+                document.querySelectorAll('.product-card').forEach(c => c.classList.remove('hidden'));
                 return;
             }
 
             if (isSearching) {
-                input.value = command;
+                if (command === "borrar todo") input.value = "";
+                else if (command === "borrar") input.value = input.value.slice(0, -1);
+                else if (!command.includes("ir a") && !command.includes("baja")) input.value = command;
+                
+                const val = input.value.toLowerCase();
                 document.querySelectorAll('.product-card').forEach(card => {
-                    const matches = card.innerText.toLowerCase().includes(command);
-                    card.style.display = matches ? "block" : "none";
+                    card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(val));
                 });
-                return;
             }
 
-            // NAVEGACIÓN
+            // NAVEGACIÓN Y OTROS
             if (command.includes("baja")) document.getElementById('main-content').scrollBy(0, 500);
             if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
 
@@ -231,6 +213,9 @@
                         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
                         item.classList.add('active');
                         loadContent(item.innerText.trim());
+                        isSearching = false;
+                        input.value = "";
+                        container.classList.remove('open');
                     }
                 });
             }
