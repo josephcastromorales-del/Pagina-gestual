@@ -2,151 +2,143 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore - Voice AI</title>
+    <title>TechStore AI - 50 Items</title>
     <style>
         :root { --bg: #0a0a0a; --sidebar: #111; --accent: #00ffcc; --text: #fff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
         /* SIDEBAR */
-        #sidebar { width: 250px; background: var(--sidebar); border-right: 1px solid #333; padding: 30px 20px; }
-        .menu-item { 
-            padding: 15px; margin-bottom: 8px; border-radius: 8px; list-style: none;
-            transition: 0.3s; border-left: 3px solid transparent; color: #888;
-        }
-        .menu-item.active { background: rgba(0, 255, 204, 0.1); border-left-color: var(--accent); color: var(--accent); }
+        #sidebar { width: 250px; background: var(--sidebar); border-right: 1px solid #333; padding: 30px 20px; flex-shrink: 0; }
+        .menu-item { padding: 15px; margin-bottom: 8px; border-radius: 8px; list-style: none; transition: 0.3s; color: #888; cursor: pointer; }
+        .menu-item.active { background: rgba(0, 255, 204, 0.1); border-left: 3px solid var(--accent); color: var(--accent); }
 
-        /* CONTENIDO */
-        #main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        /* CONTENIDO PRINCIPAL */
+        #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; position: relative; }
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         
         .product-card { 
             background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; 
-            transition: 0.3s; position: relative;
+            transition: 0.3s; position: relative; height: 280px;
         }
-        .product-card.last-bought { border-color: var(--accent); box-shadow: 0 0 20px rgba(0,255,204,0.2); }
+        .product-card.active-voice { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
         
-        .badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; }
-        .placeholder { height: 150px; background: #222; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #444; }
+        .badge { position: absolute; top: 10px; right: 10px; background: #333; color: var(--accent); padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; }
+        .placeholder { height: 120px; background: #222; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #444; font-weight: bold; }
 
-        /* UI DE ESTADO */
+        /* BARRA DE ESTADO SILENCIOSA */
         #status-bar { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 10px 30px; background: #222; border-radius: 50px; border: 1px solid var(--accent);
-            display: flex; align-items: center; gap: 15px; z-index: 1000;
+            position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; 
+            background: rgba(0,0,0,0.8); border-radius: 10px; border: 1px solid #333; font-size: 0.8rem; z-index: 1000;
         }
-        .dot { width: 10px; height: 10px; background: gray; border-radius: 50%; }
-        .dot.active { background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1s infinite; }
-        @keyframes pulse { 50% { opacity: 0.5; } }
+        .mic-on { color: var(--accent); }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
         <h2 style="color:var(--accent); margin-bottom: 30px;">TECH STORE</h2>
-        <ul id="menu-list">
+        <ul>
             <li class="menu-item active">Hardware</li>
             <li class="menu-item">Software</li>
             <li class="menu-item">Periféricos</li>
-            <li class="menu-item">Cámaras</li>
         </ul>
     </nav>
 
     <main id="main-content">
-        <h1 id="section-title" style="margin-bottom: 30px;">Sección: Hardware</h1>
+        <h1 id="section-title" style="margin-bottom: 30px;">Catálogo: 50 Productos</h1>
         <div id="products-grid">
-            <div class="product-card" data-index="1">
-                <span class="badge">PROD 1</span>
-                <div class="placeholder">IMAGEN</div>
-                <h3>Procesador Ryzen</h3>
-                <p>$300</p>
             </div>
-            <div class="product-card" data-index="2">
-                <span class="badge">PROD 2</span>
-                <div class="placeholder">IMAGEN</div>
-                <h3>Tarjeta Gráfica</h3>
-                <p>$600</p>
-            </div>
-        </div>
     </main>
 
     <div id="status-bar">
-        <div id="mic-dot" class="dot"></div>
-        <span id="mic-text">Diga "Ir a..." o "Comprar producto..."</span>
+        <span class="mic-on">● AI Activa:</span> <span id="command-hint">Diga "Baja", "Sube" o "Comprar producto..."</span>
     </div>
 
     <script>
-        // Configuración de Reconocimiento de Voz
+        // 1. GENERAR 50 PRODUCTOS DINÁMICAMENTE
+        const grid = document.getElementById('products-grid');
+        for (let i = 1; i <= 50; i++) {
+            grid.innerHTML += `
+                <div class="product-card" data-index="${i}">
+                    <span class="badge">#${i}</span>
+                    <div class="placeholder">TECH PRO</div>
+                    <h3>Producto ${i}</h3>
+                    <p style="color:var(--accent)">$${(Math.random() * 500 + 50).toFixed(2)}</p>
+                </div>
+            `;
+        }
+
+        // 2. CONFIGURACIÓN DE VOZ (SILENCIOSA)
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
-        recognition.continuous = true; // Escucha constante
+        recognition.continuous = true;
         recognition.interimResults = false;
 
-        // Iniciar al cargar
         window.onload = () => recognition.start();
 
-        recognition.onstart = () => {
-            document.getElementById('mic-dot').classList.add('active');
-        };
-
         recognition.onresult = (event) => {
-            const last = event.results.length - 1;
-            const command = event.results[last][0].transcript.toLowerCase().trim();
-            console.log("Comando recibido:", command);
+            const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+            const hint = document.getElementById('command-hint');
+            hint.innerText = `Último comando: "${command}"`;
 
-            // 1. Lógica de NAVEGACIÓN: "Ir a [Sección]"
+            // NAVEGACIÓN DE SCROLL
+            if (command.includes("baja") || command.includes("abajo")) {
+                scrollPage("down");
+            }
+            if (command.includes("sube") || command.includes("arriba")) {
+                scrollPage("up");
+            }
+
+            // IR A SECCIÓN
             if (command.includes("ir a")) {
-                const sections = document.querySelectorAll('.menu-item');
-                sections.forEach(sec => {
+                document.querySelectorAll('.menu-item').forEach(sec => {
                     if (command.includes(sec.innerText.toLowerCase())) {
-                        changeSection(sec);
+                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                        sec.classList.add('active');
+                        document.getElementById('section-title').innerText = "Sección: " + sec.innerText;
+                        document.getElementById('main-content').scrollTop = 0;
                     }
                 });
             }
 
-            // 2. Lógica de COMPRA: "Comprar producto [Número]"
-            if (command.includes("comprar el producto") || command.includes("comprar producto")) {
-                // Extraer el número del comando
-                const numbers = { "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "1": 1, "2": 2, "3": 3 };
-                let targetId = null;
-
-                for (let key in numbers) {
-                    if (command.includes(key)) {
-                        targetId = numbers[key];
-                        break;
-                    }
-                }
-
-                if (targetId) {
-                    executePurchase(targetId);
-                }
+            // COMPRA
+            if (command.includes("comprar")) {
+                const words = command.split(" ");
+                const num = words.find(w => !isNaN(w)) || wordToNumber(command);
+                if (num) executePurchase(num);
             }
         };
 
-        function changeSection(element) {
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById('section-title').innerText = "Sección: " + element.innerText;
+        // 3. FUNCIÓN DE SCROLL INTELIGENTE
+        function scrollPage(direction) {
+            const container = document.getElementById('main-content');
+            const viewHeight = container.clientHeight; // Lo que el usuario ve
+            const scrollAmount = viewHeight * 0.8; // Baja un 80% de la pantalla para no perderse nada
             
-            // Simulación de cambio de productos (puedes añadir lógica real aquí)
-            console.log("Navegando a:", element.innerText);
-        }
-
-        function executePurchase(id) {
-            // Busca el producto con ese ID dentro de la sección actual
-            const product = document.querySelector(`.product-card[data-index="${id}"]`);
-            
-            if (product) {
-                // Efecto visual de compra
-                product.classList.add('last-bought');
-                alert("🛒 ¡Has comprado el Producto " + id + " de la sección " + document.querySelector('.menu-item.active').innerText + "!");
-                setTimeout(() => product.classList.remove('last-bought'), 2000);
+            if (direction === "down") {
+                container.scrollBy(0, scrollAmount);
             } else {
-                console.log("Producto no encontrado en esta vista.");
+                container.scrollBy(0, -scrollAmount);
             }
         }
 
-        // Reiniciar si se detiene por error
+        function executePurchase(id) {
+            const product = document.querySelector(`.product-card[data-index="${id}"]`);
+            if (product) {
+                product.classList.add('active-voice');
+                alert(`🛒 Producto ${id} añadido al carrito.`);
+                setTimeout(() => product.classList.remove('active-voice'), 1500);
+            }
+        }
+
+        function wordToNumber(str) {
+            const map = { "uno":1, "dos":2, "tres":3, "cuatro":4, "cinco":5, "diez":10, "catorce":14, "veinte":20, "cincuenta":50 };
+            for (let word in map) { if (str.includes(word)) return map[word]; }
+            return null;
+        }
+
+        // Reiniciar silenciosamente si se corta
         recognition.onend = () => recognition.start();
     </script>
 </body>
