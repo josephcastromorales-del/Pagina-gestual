@@ -2,273 +2,245 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - Pixel Perfect Replica</title>
+    <title>TechStore AI - Premium Voice UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
             --bg-body: #f5f7f9;
             --sidebar-dark: #121212;
-            --sidebar-item-active: #2196f3;
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            --text-title: #1a1a1a;
-            --text-p: #7d7d7d;
+            --sidebar-active: #2196f3;
+            --text-main: #1a1a1a;
+            --text-muted: #7d7d7d;
+            --card-white: #ffffff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+        body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; color: var(--text-main); }
 
-        body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
-
-        /* SIDEBAR EXACTO A LA IMAGEN */
-        #sidebar { 
-            width: 200px; 
-            background: var(--sidebar-dark); 
-            color: #8a8a8a; 
-            display: flex; 
-            flex-direction: column;
-            padding-top: 15px;
-            position: relative;
-        }
-
-        .brand {
-            padding: 15px 20px 30px;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.95rem;
-        }
-
-        .menu-item {
-            padding: 12px 20px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-        }
-
+        /* SIDEBAR ESTILO IMAGEN */
+        #sidebar { width: 220px; background: var(--sidebar-dark); color: #8a8a8a; display: flex; flex-direction: column; padding-top: 15px; flex-shrink: 0; }
+        .brand { padding: 15px 20px 30px; color: white; font-weight: bold; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; }
+        
+        .menu-item { padding: 14px 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; position: relative; }
         .menu-item:hover { color: white; }
-
-        .menu-item.active { 
-            background: #1a1a1a; 
-            color: white; 
-        }
-
-        /* Barra azul vertical de la imagen */
-        .menu-item.active::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--sidebar-item-active);
-        }
-
-        .status-sub {
-            padding-left: 45px;
-            font-size: 0.75rem;
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            padding: 20px;
-            border-top: 1px solid #222;
-        }
+        .menu-item.active { background: #1a1a1a; color: white; }
+        
+        /* Línea azul de la imagen */
+        .menu-item.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sidebar-active); }
 
         /* CONTENIDO */
-        #main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #main-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { height: 65px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 40px; justify-content: space-between; }
 
-        header {
-            height: 65px;
-            background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-            justify-content: flex-end;
-            color: white;
-            gap: 20px;
+        #main-content { padding: 40px; overflow-y: scroll; flex-grow: 1; scroll-behavior: smooth; }
+        #main-content::-webkit-scrollbar { width: 8px; }
+        #main-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+
+        /* BUSCADOR */
+        #search-container { display: flex; align-items: center; background: #fff; border: 1px solid #ddd; border-radius: 8px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0; }
+        #search-container.open { width: 300px; padding: 5px 15px; opacity: 1; }
+        #search-input { border: none; padding: 8px; width: 100%; outline: none; font-size: 0.9rem; }
+
+        /* TARJETAS IGUAL A LA IMAGEN */
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
+        .product-card { 
+            background: var(--card-white); border-radius: 12px; padding: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; 
+            min-height: 250px; transition: 0.3s; 
         }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-card.hidden { display: none; }
+        .card-label { font-size: 0.8rem; color: #999; margin-bottom: 15px; }
+        .product-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+        .product-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; max-width: 85%; }
 
-        #scroll-area { 
-            padding: 40px; 
-            overflow-y: scroll; 
-            flex-grow: 1; 
-            scroll-behavior: smooth;
+        /* BADGES DE PRECIO OVALADOS */
+        .price-badge { 
+            position: absolute; bottom: 35px; right: 35px; padding: 8px 22px; 
+            border-radius: 50px; font-weight: bold; font-size: 0.9rem; 
         }
+        .price-black { background: #1a1a1a; color: white; }
+        .price-green { background: #e2f2e9; color: #2d6a4f; }
+        .price-red { background: #ff7070; color: white; }
 
-        /* DISEÑO DE GRILLA Y CARTAS */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
-            gap: 25px; 
-        }
+        /* HELP CARDS */
+        .help-card { background: white; padding: 25px; border-radius: 15px; border-left: 4px solid var(--sidebar-active); margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .cmd-tag { color: var(--sidebar-active); font-weight: bold; background: rgba(33, 150, 243, 0.1); padding: 2px 8px; border-radius: 4px; }
 
-        .section-label {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 15px;
-        }
+        /* STATUS UI */
+        #status-ui { position: fixed; bottom: 25px; left: 240px; background: white; padding: 10px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; }
+        .dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+        .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            min-height: 250px;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s;
-        }
-
-        .card:hover { transform: translateY(-5px); }
-
-        .card .label-top { 
-            font-size: 0.8rem; 
-            color: #999; 
-            position: absolute; 
-            top: 20px; 
-            left: 40px; 
-        }
-
-        .card h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; color: var(--text-title); }
-        .card p { font-size: 0.9rem; color: var(--text-p); line-height: 1.5; max-width: 80%; }
-
-        /* BOTONES DE PRECIO OVALADOS (Colores de la imagen) */
-        .price {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            padding: 8px 22px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: white;
-        }
-
-        .price.black { background: #1a1a1a; }
-        .price.green { background: #e2f2e9; color: #2d6a4f; }
-        .price.red { background: #ff7070; color: white; }
-
-        /* BUSCADOR HIDDEN */
-        #search-box {
-            position: absolute; top: 15px; right: 150px;
-            background: white; border-radius: 8px; border: 1px solid #ddd;
-            padding: 5px 15px; display: none;
-        }
-
-        #notification {
-            position: fixed; bottom: 30px; right: -300px;
-            background: #1a1a1a; color: white; padding: 15px 30px;
-            border-radius: 8px; transition: 0.5s; z-index: 9999;
-        }
-        #notification.show { right: 30px; }
-
+        /* MODAL Y NOTIFICACIÓN */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        #modal { background: white; padding: 40px; border-radius: 20px; width: 400px; text-align: center; }
+        #notification-bar { position: fixed; top: 20px; right: -350px; width: 280px; background: #1a1a1a; color: white; padding: 20px; border-radius: 12px; font-weight: bold; transition: 0.5s; z-index: 5000; }
+        #notification-bar.show { right: 20px; }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="brand"><i class="fa-solid fa-table-cells-large"></i> TechStore AI</div>
-        
-        <div class="menu-item"><i class="fa-solid fa-microphone"></i> Voice</div>
-        <div class="menu-item"><i class="fa-solid fa-tower-broadcast"></i> Voice</div>
-        <div class="status-sub">* Status</div>
-        
-        <div class="menu-item"><i class="fa-solid fa-compass"></i> Voie Status</div>
-        <div class="menu-item active"><i class="fa-solid fa-square-poll-horizontal"></i> Natoins</div>
-        <div class="menu-item"><i class="fa-solid fa-user-group"></i> Retoure</div>
-        <div class="menu-item"><i class="fa-solid fa-box"></i> Besveltlitie</div>
-        <div class="menu-item"><i class="fa-solid fa-hashtag"></i> #0a800</div>
-
-        <div class="sidebar-footer">
-            <i class="fa-regular fa-star"></i>
-        </div>
+        <div class="brand"><i class="fa-solid fa-layer-group"></i> TECH CORE</div>
+        <div class="menu-item active"><i class="fa-solid fa-box"></i> Productos</div>
+        <div class="menu-item"><i class="fa-solid fa-list"></i> Catálogo</div>
+        <div class="menu-item"><i class="fa-solid fa-keyboard"></i> Periféricos</div>
+        <div class="menu-item" style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;"><i class="fa-solid fa-gear"></i> Controlar sistema</div>
+        <div style="margin-top: auto; padding: 20px; font-size: 0.7rem;">★ TechStore AI v2.0</div>
     </nav>
 
-    <div id="main">
+    <div id="main-wrapper">
         <header>
-            <input type="text" id="search-box" placeholder="Buscando...">
-            <i class="fa-regular fa-star"></i>
-            <i class="fa-solid fa-bars"></i>
+            <h1 id="view-title" style="font-size: 1.2rem; font-weight: 500;">Productos</h1>
+            <div id="search-container">
+                <i class="fa-solid fa-magnifying-glass" style="color: #999;"></i>
+                <input type="text" id="search-input" readonly placeholder="Dictado por voz...">
+            </div>
         </header>
 
-        <main id="scroll-area">
-            <div class="section-label">product card</div>
-            <div class="grid" id="grid">
-                </div>
+        <main id="main-content">
+            <div id="products-grid"></div>
         </main>
     </div>
 
-    <div id="notification">✅ Acción realizada</div>
+    <div id="status-ui">
+        <div id="status-dot" class="dot"></div>
+        <span id="status-text">Di "Activar sistema"</span>
+    </div>
+
+    <div id="notification-bar">✅ Operación Exitosa</div>
+
+    <div id="modal-overlay">
+        <div id="modal">
+            <h2 id="modal-title">Confirmar Compra</h2>
+            <p id="modal-desc" style="margin: 20px 0; color: var(--text-muted);">¿Deseas confirmar esta transacción?</p>
+            <button onclick="finishOrder()" style="padding:12px 25px; background:var(--sidebar-dark); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Confirmar</button>
+            <button onclick="closeModal()" style="padding:12px 25px; background:#f1f5f9; color:#444; border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Cancelar</button>
+        </div>
+    </div>
 
     <script>
-        // Datos con los colores de precio de la imagen
-        const items = [
-            { title: "H...", desc: "Corolotos s tfty lays tont cat ur un der proebus", price: "$27.00", color: "black" },
-            { title: "Product Name", desc: "Fmotueel Produots tnem met ad dis cinca un dar proclbus", price: "$12.00", color: "green" },
-            { title: "Product Name", desc: "Desoiplont Excipet eliie a to the toasted", price: "$5.00", color: "red" },
-            { title: "Product Name", desc: "Lemies Produots themmet ari dis cinca un dar proebus", price: "$15.00", color: "green" }
-        ];
+        // CATÁLOGO PERSONALIZADO PARA TUS NUEVAS SECCIONES
+        const catalog = {
+            "productos": { prefix: "Workstation ", desc: "Potencia extrema para diseño profesional y renderizado.", colors: ["price-black", "price-green"] },
+            "catálogo": { prefix: "Componente ", desc: "Hardware certificado de alta fidelidad para servidores.", colors: ["price-black"] },
+            "periféricos": { prefix: "Gaming Gear ", desc: "Respuesta inmediata con tecnología inalámbrica de baja latencia.", colors: ["price-red", "price-green"] }
+        };
 
-        function render() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = items.map(item => `
-                <div class="card">
-                    <span class="label-top">product card</span>
-                    <h2>${item.title}</h2>
-                    <p>${item.desc}</p>
-                    <div class="price ${item.color}">${item.price}</div>
-                </div>
-            `).join('');
+        function loadContent(section) {
+            const grid = document.getElementById('products-grid');
+            const title = document.getElementById('view-title');
+            grid.innerHTML = "";
+            title.innerText = section;
+
+            if (section.toLowerCase() === "controlar sistema") {
+                document.getElementById('search-container').classList.remove('open');
+                grid.style.display = "block";
+                grid.innerHTML = `
+                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Úsalos en la ventana de compra.</div>
+                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Enciende el asistente.</div>
+                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Navega a Productos, Catálogo o Periféricos.</div>
+                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre el buscador por voz.</div>
+                `;
+                return;
+            }
+
+            grid.style.display = "grid";
+            const data = catalog[section.toLowerCase()] || { prefix: "Item ", desc: "Descripción del producto", colors: ["price-black"] };
+            
+            for (let i = 1; i <= 24; i++) {
+                const randomColor = data.colors[Math.floor(Math.random() * data.colors.length)];
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <span class="card-label">product card</span>
+                        <h3>${data.prefix}${i}</h3>
+                        <p>${data.desc}</p>
+                        <div class="price-badge ${randomColor}">$${(Math.random()*500 + 50).toFixed(2)}</div>
+                    </div>`;
+            }
         }
 
-        render();
+        // LÓGICA DE VOZ (JS ORIGINAL MANTENIDO)
+        loadContent("productos");
 
-        // --- LÓGICA DE VOZ MANTENIDA ---
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
         recognition.continuous = true;
+
         let systemActive = false;
+        let isSearching = false;
+        let modalOpen = false;
 
         window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            
+            const input = document.getElementById('search-input');
+
             if (command.includes("activar sistema")) {
                 systemActive = true;
-                showNotif("Sistema Activo");
+                document.getElementById('status-dot').classList.add('online');
+                document.getElementById('status-text').innerText = "Sistema Escuchando";
+                return;
+            }
+            if (command.includes("apagar sistema")) {
+                systemActive = false;
+                document.getElementById('status-dot').classList.remove('online');
+                document.getElementById('status-text').innerText = "Di 'Activar sistema'";
+                return;
+            }
+            if (!systemActive) return;
+
+            if (modalOpen) {
+                if (command.includes("confirmar")) { finishOrder(); return; }
+                if (command.includes("cancelar")) { closeModal(); return; }
+            }
+
+            if (command.includes("buscar")) {
+                isSearching = true;
+                document.getElementById('search-container').classList.add('open');
                 return;
             }
 
-            if (!systemActive) return;
-
-            if (command.includes("baja")) document.getElementById('scroll-area').scrollBy(0, 400);
-            if (command.includes("sube")) document.getElementById('scroll-area').scrollBy(0, -400);
-            
-            if (command.includes("buscar")) {
-                document.getElementById('search-box').style.display = "block";
-                document.getElementById('search-box').focus();
+            if (isSearching) {
+                if (command.includes("borrar todo")) input.value = "";
+                else if (command.includes("borrar")) input.value = input.value.slice(0, -1);
+                else if (!command.includes("ir a") && !command.includes("baja")) input.value = command;
+                
+                const val = input.value.toLowerCase();
+                document.querySelectorAll('.product-card').forEach(card => {
+                    card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(val));
+                });
             }
 
-            if (command.includes("confirmar")) {
-                showNotif("✅ Compra Confirmada");
+            if (command.includes("baja")) document.getElementById('main-content').scrollBy(0, 500);
+            if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
+
+            if (command.includes("ir a") || command.includes("controlar sistema")) {
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    if (command.includes(item.innerText.toLowerCase())) {
+                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+                        item.classList.add('active');
+                        loadContent(item.innerText.trim());
+                        isSearching = false;
+                        input.value = "";
+                    }
+                });
+            }
+
+            if (command.includes("comprar producto")) {
+                document.getElementById('modal-overlay').style.display = "flex";
+                modalOpen = true;
             }
         };
 
-        function showNotif(msg) {
-            const n = document.getElementById('notification');
-            n.innerText = msg;
-            n.classList.add('show');
-            setTimeout(() => n.classList.remove('show'), 3000);
+        function closeModal() { document.getElementById('modal-overlay').style.display = "none"; modalOpen = false; }
+        function finishOrder() {
+            closeModal();
+            const bar = document.getElementById('notification-bar');
+            bar.classList.add('show');
+            setTimeout(() => bar.classList.remove('show'), 3000);
         }
 
         recognition.onend = () => recognition.start();
