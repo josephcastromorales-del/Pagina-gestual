@@ -2,308 +2,273 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - UI Replica</title>
+    <title>TechStore AI - Pixel Perfect Replica</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
-            --bg-page: #f4f7f9; 
-            --sidebar-bg: #1a1a1a; 
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-muted: #888888;
-            --accent: #000000;
+            --bg-body: #f5f7f9;
+            --sidebar-dark: #121212;
+            --sidebar-item-active: #2196f3;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            --text-title: #1a1a1a;
+            --text-p: #7d7d7d;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
 
-        body { 
-            background: var(--bg-page); 
-            display: flex; 
-            height: 100vh; 
-            overflow: hidden; 
-        }
+        body { background: var(--bg-body); display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR ESTILO IMAGEN */
+        /* SIDEBAR EXACTO A LA IMAGEN */
         #sidebar { 
-            width: 220px; 
-            background: var(--sidebar-bg); 
-            color: white; 
+            width: 200px; 
+            background: var(--sidebar-dark); 
+            color: #8a8a8a; 
             display: flex; 
-            flex-direction: column; 
-            padding: 20px 0;
-            flex-shrink: 0;
+            flex-direction: column;
+            padding-top: 15px;
+            position: relative;
         }
 
-        .logo-area {
-            padding: 0 20px 30px;
-            font-weight: 800;
-            font-size: 1.1rem;
+        .brand {
+            padding: 15px 20px 30px;
+            color: white;
+            font-weight: bold;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 0.95rem;
         }
 
-        .menu-item { 
-            padding: 12px 25px; 
-            color: #bbbbbb; 
-            cursor: pointer; 
-            font-size: 0.9rem;
+        .menu-item {
+            padding: 12px 20px;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 12px;
+            cursor: pointer;
             transition: 0.2s;
+            position: relative;
         }
-        
-        .menu-item:hover, .menu-item.active { 
+
+        .menu-item:hover { color: white; }
+
+        .menu-item.active { 
+            background: #1a1a1a; 
             color: white; 
-            background: rgba(255,255,255,0.05); 
         }
 
-        .status-dot-sidebar {
-            width: 6px; height: 6px; border-radius: 50%; background: #ff4d4d;
-            display: inline-block; margin-left: auto;
+        /* Barra azul vertical de la imagen */
+        .menu-item.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--sidebar-item-active);
         }
-        .status-dot-sidebar.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
 
-        /* CONTENIDO PRINCIPAL */
-        #main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        .status-sub {
+            padding-left: 45px;
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 20px;
         }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid #222;
+        }
+
+        /* CONTENIDO */
+        #main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
 
         header {
-            height: 60px;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
+            height: 65px;
+            background: #1a1a1a;
             display: flex;
             align-items: center;
-            padding: 0 40px;
-            justify-content: space-between;
+            padding: 0 30px;
+            justify-content: flex-end;
+            color: white;
+            gap: 20px;
         }
 
-        #main-content { 
+        #scroll-area { 
             padding: 40px; 
             overflow-y: scroll; 
-            flex-grow: 1;
+            flex-grow: 1; 
             scroll-behavior: smooth;
         }
 
-        /* SCROLLBAR FINITA */
-        #main-content::-webkit-scrollbar { width: 10px; }
-        #main-content::-webkit-scrollbar-track { background: transparent; }
-        #main-content::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 10px; border: 3px solid var(--bg-page); }
-
-        /* BUSCADOR */
-        #search-container {
-            display: flex; align-items: center; background: #fff; border: 1px solid #ddd; 
-            border-radius: 8px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0;
-        }
-        #search-container.open { width: 300px; padding: 5px 15px; opacity: 1; }
-        #search-input { border: none; padding: 8px; width: 100%; outline: none; font-size: 0.9rem; }
-
-        /* GRID DE PRODUCTOS IGUAL A LA IMAGEN */
-        #products-grid { 
+        /* DISEÑO DE GRILLA Y CARTAS */
+        .grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-            gap: 30px; 
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+            gap: 25px; 
         }
 
-        .product-card { 
-            background: var(--card-bg); 
-            border-radius: 12px; 
-            padding: 40px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        .section-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            min-height: 250px;
             display: flex;
             flex-direction: column;
-            min-height: 220px;
-            transition: 0.3s;
-            position: relative;
+            transition: transform 0.3s;
         }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
-        .product-card.hidden { display: none; }
 
-        .card-label { font-size: 0.8rem; color: #666; margin-bottom: 15px; font-weight: 500; }
-        .product-name { font-size: 1.4rem; font-weight: 700; color: #111; margin-bottom: 5px; }
-        .product-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        .card:hover { transform: translateY(-5px); }
 
-        /* BADGE DE PRECIO OVALADO */
-        .price-badge {
+        .card .label-top { 
+            font-size: 0.8rem; 
+            color: #999; 
+            position: absolute; 
+            top: 20px; 
+            left: 40px; 
+        }
+
+        .card h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; color: var(--text-title); }
+        .card p { font-size: 0.9rem; color: var(--text-p); line-height: 1.5; max-width: 80%; }
+
+        /* BOTONES DE PRECIO OVALADOS (Colores de la imagen) */
+        .price {
             position: absolute;
             bottom: 30px;
             right: 30px;
-            background: #1a1a1a;
-            color: white;
-            padding: 8px 20px;
+            padding: 8px 22px;
             border-radius: 50px;
-            font-weight: 700;
+            font-weight: bold;
             font-size: 0.9rem;
+            color: white;
         }
 
-        /* MODAL Y NOTIFICACIÓN */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        #modal { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; }
-        
-        #notification-bar { position: fixed; top: 20px; right: -300px; background: #000; color: #fff; padding: 15px 30px; border-radius: 8px; transition: 0.5s; z-index: 2000; }
-        #notification-bar.show { right: 20px; }
+        .price.black { background: #1a1a1a; }
+        .price.green { background: #e2f2e9; color: #2d6a4f; }
+        .price.red { background: #ff7070; color: white; }
+
+        /* BUSCADOR HIDDEN */
+        #search-box {
+            position: absolute; top: 15px; right: 150px;
+            background: white; border-radius: 8px; border: 1px solid #ddd;
+            padding: 5px 15px; display: none;
+        }
+
+        #notification {
+            position: fixed; bottom: 30px; right: -300px;
+            background: #1a1a1a; color: white; padding: 15px 30px;
+            border-radius: 8px; transition: 0.5s; z-index: 9999;
+        }
+        #notification.show { right: 30px; }
 
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="logo-area">🔳 TechStore AI</div>
-        <div class="menu-item active">Procesadores</div>
-        <div class="menu-item">Gráficas</div>
-        <div class="menu-item">Monitores</div>
-        <div class="menu-item">Controlar sistema</div>
-        <div style="margin-top: auto; padding: 20px;" class="menu-item">
-            Status <span id="status-dot" class="status-dot-sidebar"></span>
+        <div class="brand"><i class="fa-solid fa-table-cells-large"></i> TechStore AI</div>
+        
+        <div class="menu-item"><i class="fa-solid fa-microphone"></i> Voice</div>
+        <div class="menu-item"><i class="fa-solid fa-tower-broadcast"></i> Voice</div>
+        <div class="status-sub">* Status</div>
+        
+        <div class="menu-item"><i class="fa-solid fa-compass"></i> Voie Status</div>
+        <div class="menu-item active"><i class="fa-solid fa-square-poll-horizontal"></i> Natoins</div>
+        <div class="menu-item"><i class="fa-solid fa-user-group"></i> Retoure</div>
+        <div class="menu-item"><i class="fa-solid fa-box"></i> Besveltlitie</div>
+        <div class="menu-item"><i class="fa-solid fa-hashtag"></i> #0a800</div>
+
+        <div class="sidebar-footer">
+            <i class="fa-regular fa-star"></i>
         </div>
     </nav>
 
-    <div id="main-wrapper">
+    <div id="main">
         <header>
-            <h2 id="view-title" style="font-size: 1.1rem; text-transform: lowercase; color: #666;">product card</h2>
-            <div id="search-container">
-                <input type="text" id="search-input" readonly placeholder="Buscar...">
-            </div>
+            <input type="text" id="search-box" placeholder="Buscando...">
+            <i class="fa-regular fa-star"></i>
+            <i class="fa-solid fa-bars"></i>
         </header>
 
-        <main id="main-content">
-            <div id="products-grid"></div>
+        <main id="scroll-area">
+            <div class="section-label">product card</div>
+            <div class="grid" id="grid">
+                </div>
         </main>
     </div>
 
-    <div id="notification-bar">✅ Compra confirmada</div>
-
-    <div id="modal-overlay">
-        <div id="modal">
-            <h3 style="margin-bottom: 10px;">¿Confirmar compra?</h3>
-            <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Di "Confirmar" o "Cancelar"</p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="finishOrder()" style="padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Confirmar</button>
-                <button onclick="closeModal()" style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; cursor: pointer;">Cancelar</button>
-            </div>
-        </div>
-    </div>
+    <div id="notification">✅ Acción realizada</div>
 
     <script>
-        const catalog = {
-            "procesadores": { name: "Intel Core i9", desc: "13th Gen Raptor Lake High Performance" },
-            "gráficas": { name: "NVIDIA RTX 4080", desc: "Ray Tracing & DLSS 3 Enabled Graphics" },
-            "monitores": { name: "Display 4K OLED", desc: "Professional Color Accurate Monitor" }
-        };
+        // Datos con los colores de precio de la imagen
+        const items = [
+            { title: "H...", desc: "Corolotos s tfty lays tont cat ur un der proebus", price: "$27.00", color: "black" },
+            { title: "Product Name", desc: "Fmotueel Produots tnem met ad dis cinca un dar proclbus", price: "$12.00", color: "green" },
+            { title: "Product Name", desc: "Desoiplont Excipet eliie a to the toasted", price: "$5.00", color: "red" },
+            { title: "Product Name", desc: "Lemies Produots themmet ari dis cinca un dar proebus", price: "$15.00", color: "green" }
+        ];
 
-        function loadContent(section) {
-            const grid = document.getElementById('products-grid');
-            const title = document.getElementById('view-title');
-            grid.innerHTML = "";
-            title.innerText = "product card"; // Estilo minimal de la imagen
-
-            if (section.toLowerCase() === "controlar sistema") {
-                grid.style.display = "block";
-                grid.innerHTML = `<div style="background:white; padding:30px; border-radius:12px;">
-                    <p>• <b>Activar sistema</b> para hablar</p>
-                    <p>• <b>Buscar</b> para filtrar</p>
-                    <p>• <b>Confirmar</b> para comprar</p>
-                </div>`;
-                return;
-            }
-
-            grid.style.display = "grid";
-            const data = catalog[section.toLowerCase()] || { name: "Product Name", desc: "Product description goes here" };
-            for (let i = 1; i <= 20; i++) {
-                grid.innerHTML += `
-                    <div class="product-card">
-                        <div class="card-label">product card</div>
-                        <div class="product-name">${data.name} ${i}</div>
-                        <div class="product-desc">${data.desc}</div>
-                        <div class="price-badge">$${(15 * i).toFixed(2)}</div>
-                    </div>`;
-            }
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = items.map(item => `
+                <div class="card">
+                    <span class="label-top">product card</span>
+                    <h2>${item.title}</h2>
+                    <p>${item.desc}</p>
+                    <div class="price ${item.color}">${item.price}</div>
+                </div>
+            `).join('');
         }
 
-        loadContent("procesadores");
+        render();
 
+        // --- LÓGICA DE VOZ MANTENIDA ---
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
         recognition.continuous = true;
-
         let systemActive = false;
-        let isSearching = false;
-        let modalOpen = false;
 
         window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            const input = document.getElementById('search-input');
-
+            
             if (command.includes("activar sistema")) {
                 systemActive = true;
-                document.getElementById('status-dot').classList.add('online');
+                showNotif("Sistema Activo");
                 return;
             }
-            if (command.includes("apagar sistema")) {
-                systemActive = false;
-                document.getElementById('status-dot').classList.remove('online');
-                return;
-            }
+
             if (!systemActive) return;
 
-            if (modalOpen) {
-                if (command === "confirmar") { finishOrder(); return; }
-                if (command === "cancelar") { closeModal(); return; }
+            if (command.includes("baja")) document.getElementById('scroll-area').scrollBy(0, 400);
+            if (command.includes("sube")) document.getElementById('scroll-area').scrollBy(0, -400);
+            
+            if (command.includes("buscar")) {
+                document.getElementById('search-box').style.display = "block";
+                document.getElementById('search-box').focus();
             }
 
-            if (command === "buscar") {
-                isSearching = true;
-                document.getElementById('search-container').classList.add('open');
-                return;
-            }
-            if (command === "apagar buscador") {
-                isSearching = false;
-                document.getElementById('search-container').classList.remove('open');
-                return;
-            }
-
-            if (isSearching) {
-                if (command === "borrar todo") input.value = "";
-                else if (command === "borrar") input.value = input.value.slice(0, -1);
-                else input.value = command;
-                
-                const val = input.value.toLowerCase();
-                document.querySelectorAll('.product-card').forEach(card => {
-                    card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(val));
-                });
-            }
-
-            if (command.includes("baja")) document.getElementById('main-content').scrollBy(0, 500);
-            if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
-
-            if (command.includes("ir a") || command.includes("controlar sistema")) {
-                document.querySelectorAll('.menu-item').forEach(item => {
-                    if (command.includes(item.innerText.toLowerCase())) {
-                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-                        item.classList.add('active');
-                        loadContent(item.innerText);
-                    }
-                });
-            }
-
-            if (command.includes("comprar producto")) {
-                document.getElementById('modal-overlay').style.display = "flex";
-                modalOpen = true;
+            if (command.includes("confirmar")) {
+                showNotif("✅ Compra Confirmada");
             }
         };
 
-        function closeModal() { document.getElementById('modal-overlay').style.display = "none"; modalOpen = false; }
-        function finishOrder() {
-            closeModal();
-            const bar = document.getElementById('notification-bar');
-            bar.classList.add('show');
-            setTimeout(() => bar.classList.remove('show'), 3000);
+        function showNotif(msg) {
+            const n = document.getElementById('notification');
+            n.innerText = msg;
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 3000);
         }
 
         recognition.onend = () => recognition.start();
