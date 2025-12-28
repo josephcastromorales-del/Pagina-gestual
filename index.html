@@ -2,175 +2,224 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - Premium Cards</title>
+    <title>TechStore AI - UI Replica</title>
     <style>
         :root { 
-            --bg-main: #fcfcfc; /* Blanco roto para resaltar las tarjetas */
-            --sidebar: #0a0a0a; 
-            --accent: #007bff; 
-            --text-dark: #1a1a1a;
-            --text-muted: #64748b;
-            --success: #10b981;
+            --bg-page: #f4f7f9; 
+            --sidebar-bg: #1a1a1a; 
             --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #888888;
+            --accent: #000000;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg-main); color: var(--text-dark); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SCROLLBAR ESTÉTICA */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
-        /* SIDEBAR */
-        #sidebar { width: 260px; background: var(--sidebar); padding: 30px 20px; flex-shrink: 0; color: white; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
-        .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; font-weight: 500; }
-        .menu-item.active { background: #1a1a1a; color: #fff; border-left: 4px solid var(--accent); }
+        body { 
+            background: var(--bg-page); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
 
-        /* CONTENIDO */
-        #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; height: 60px; }
-        h1 { font-size: 2rem; font-weight: 700; color: #111; }
+        /* SIDEBAR ESTILO IMAGEN */
+        #sidebar { 
+            width: 220px; 
+            background: var(--sidebar-bg); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            padding: 0 20px 30px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item { 
+            padding: 12px 25px; 
+            color: #bbbbbb; 
+            cursor: pointer; 
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+        
+        .menu-item:hover, .menu-item.active { 
+            color: white; 
+            background: rgba(255,255,255,0.05); 
+        }
+
+        .status-dot-sidebar {
+            width: 6px; height: 6px; border-radius: 50%; background: #ff4d4d;
+            display: inline-block; margin-left: auto;
+        }
+        .status-dot-sidebar.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+
+        /* CONTENIDO PRINCIPAL */
+        #main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            justify-content: space-between;
+        }
+
+        #main-content { 
+            padding: 40px; 
+            overflow-y: scroll; 
+            flex-grow: 1;
+            scroll-behavior: smooth;
+        }
+
+        /* SCROLLBAR FINITA */
+        #main-content::-webkit-scrollbar { width: 10px; }
+        #main-content::-webkit-scrollbar-track { background: transparent; }
+        #main-content::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 10px; border: 3px solid var(--bg-page); }
 
         /* BUSCADOR */
         #search-container {
-            display: flex; align-items: center; background: #fff; border: 1px solid #e5e7eb; 
-            border-radius: 14px; width: 0; overflow: hidden; transition: 0.4s ease-in-out; opacity: 0;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex; align-items: center; background: #fff; border: 1px solid #ddd; 
+            border-radius: 8px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0;
         }
-        #search-container.open { width: 350px; padding: 5px 15px; border-color: var(--accent); opacity: 1; }
-        #search-input { background: transparent; border: none; color: var(--text-dark); padding: 10px; width: 100%; outline: none; font-size: 1rem; }
+        #search-container.open { width: 300px; padding: 5px 15px; opacity: 1; }
+        #search-input { border: none; padding: 8px; width: 100%; outline: none; font-size: 0.9rem; }
 
-        /* PRODUCTOS - LAS CAJAS */
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        /* GRID DE PRODUCTOS IGUAL A LA IMAGEN */
+        #products-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 30px; 
+        }
+
         .product-card { 
             background: var(--card-bg); 
-            padding: 30px; 
-            border-radius: 24px; 
-            border: 1px solid #edf2f7; 
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            border-radius: 12px; 
+            padding: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            min-height: 220px;
+            transition: 0.3s;
+            position: relative;
         }
-        .product-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.08); 
-            border-color: var(--accent);
-        }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
         .product-card.hidden { display: none; }
-        
-        .product-card h3 { font-size: 1.15rem; margin: 12px 0 8px 0; color: #1a202c; }
-        .product-card .price-tag { 
-            margin-top: auto;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--accent);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .card-label { font-size: 0.8rem; color: #666; margin-bottom: 15px; font-weight: 500; }
+        .product-name { font-size: 1.4rem; font-weight: 700; color: #111; margin-bottom: 5px; }
+        .product-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+
+        /* BADGE DE PRECIO OVALADO */
+        .price-badge {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: #1a1a1a;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9rem;
         }
-        .buy-badge { font-size: 0.7rem; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; color: #475569; text-transform: uppercase; font-weight: bold; }
 
-        /* AYUDA */
-        .help-card { background: #fff; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .cmd-tag { color: var(--accent); font-weight: bold; background: rgba(0,123,255,0.08); padding: 3px 10px; border-radius: 6px; }
-
-        /* NOTIFICACIÓN */
-        #notification-bar { position: fixed; top: 20px; right: -300px; width: 280px; background: #000; color: #fff; padding: 22px; border-radius: 16px; font-weight: bold; transition: 0.5s; z-index: 5000; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        /* MODAL Y NOTIFICACIÓN */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        #modal { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; }
+        
+        #notification-bar { position: fixed; top: 20px; right: -300px; background: #000; color: #fff; padding: 15px 30px; border-radius: 8px; transition: 0.5s; z-index: 2000; }
         #notification-bar.show { right: 20px; }
 
-        /* MODAL */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        #modal { background: #ffffff; padding: 45px; border-radius: 32px; width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-
-        /* STATUS */
-        #status-ui { position: fixed; bottom: 25px; left: 285px; background: #fff; padding: 12px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; }
-        .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <h2 style="color:var(--accent); font-size: 1.5rem; margin-bottom: 40px; text-align: center; letter-spacing: -1px;">TECH CORE</h2>
+        <div class="logo-area">🔳 TechStore AI</div>
         <div class="menu-item active">Procesadores</div>
         <div class="menu-item">Gráficas</div>
         <div class="menu-item">Monitores</div>
-        <div class="menu-item">Periféricos</div>
-        <div class="menu-item" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #222;">Controlar sistema</div>
+        <div class="menu-item">Controlar sistema</div>
+        <div style="margin-top: auto; padding: 20px;" class="menu-item">
+            Status <span id="status-dot" class="status-dot-sidebar"></span>
+        </div>
     </nav>
 
-    <main id="main-content">
-        <div class="header-flex">
-            <h1 id="view-title">Procesadores</h1>
+    <div id="main-wrapper">
+        <header>
+            <h2 id="view-title" style="font-size: 1.1rem; text-transform: lowercase; color: #666;">product card</h2>
             <div id="search-container">
-                <span style="margin-left: 5px;">🔍</span>
-                <input type="text" id="search-input" readonly placeholder="Dictando búsqueda...">
+                <input type="text" id="search-input" readonly placeholder="Buscar...">
             </div>
-        </div>
-        <div id="products-grid"></div>
-    </main>
+        </header>
 
-    <div id="notification-bar">✅ Compra realizada con éxito</div>
+        <main id="main-content">
+            <div id="products-grid"></div>
+        </main>
+    </div>
+
+    <div id="notification-bar">✅ Compra confirmada</div>
 
     <div id="modal-overlay">
         <div id="modal">
-            <div style="background: #f0f7ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--accent); font-size: 1.5rem;">🛒</div>
-            <h2 id="modal-title" style="color:#111; margin-bottom: 10px;">Confirmar Pedido</h2>
-            <p id="modal-desc" style="color: var(--text-muted); margin-bottom: 30px;">Di "Confirmar" para procesar tu compra o "Cancelar" para volver.</p>
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button id="btn-confirm" onclick="finishOrder()" style="padding:14px 28px; background:var(--sidebar); color:white; border:none; border-radius:14px; cursor:pointer; font-weight:bold; transition: 0.2s;">Confirmar</button>
-                <button id="btn-cancel" onclick="closeModal()" style="padding:14px 28px; background:#f1f5f9; color:#475569; border:none; border-radius:14px; cursor:pointer; font-weight:bold;">Cancelar</button>
+            <h3 style="margin-bottom: 10px;">¿Confirmar compra?</h3>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Di "Confirmar" o "Cancelar"</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="finishOrder()" style="padding: 10px 20px; background: #000; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Confirmar</button>
+                <button onclick="closeModal()" style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; cursor: pointer;">Cancelar</button>
             </div>
         </div>
-    </div>
-
-    <div id="status-ui">
-        <div id="status-dot" class="dot"></div>
-        <span id="status-text" style="font-weight: 600; color: #444;">Diga "Activar sistema"</span>
     </div>
 
     <script>
         const catalog = {
-            "procesadores": { prefix: "Intel Core i", extra: "12va Generación" },
-            "gráficas": { prefix: "NVIDIA RTX ", extra: "Serie 4000" },
-            "monitores": { prefix: "LG UltraGear ", extra: "IPS 1ms" },
-            "periféricos": { prefix: "Razer DeathAdder ", extra: "V3 Pro" }
+            "procesadores": { name: "Intel Core i9", desc: "13th Gen Raptor Lake High Performance" },
+            "gráficas": { name: "NVIDIA RTX 4080", desc: "Ray Tracing & DLSS 3 Enabled Graphics" },
+            "monitores": { name: "Display 4K OLED", desc: "Professional Color Accurate Monitor" }
         };
 
         function loadContent(section) {
             const grid = document.getElementById('products-grid');
             const title = document.getElementById('view-title');
             grid.innerHTML = "";
-            title.innerText = section;
+            title.innerText = "product card"; // Estilo minimal de la imagen
 
             if (section.toLowerCase() === "controlar sistema") {
-                document.getElementById('search-container').classList.remove('open');
                 grid.style.display = "block";
-                grid.innerHTML = `
-                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Directo en el carrito.</div>
-                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Despierta al asistente.</div>
-                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Navega por la tienda.</div>
-                    <div class="help-card"><span class="cmd-tag">Buscar</span> Inicia el buscador.</div>
-                    <div class="help-card"><span class="cmd-tag">Borrar todo</span> Limpia la búsqueda.</div>
-                `;
+                grid.innerHTML = `<div style="background:white; padding:30px; border-radius:12px;">
+                    <p>• <b>Activar sistema</b> para hablar</p>
+                    <p>• <b>Buscar</b> para filtrar</p>
+                    <p>• <b>Confirmar</b> para comprar</p>
+                </div>`;
                 return;
             }
 
             grid.style.display = "grid";
-            const data = catalog[section.toLowerCase()] || { prefix: "Producto ", extra: "Premium" };
-            for (let i = 1; i <= 50; i++) {
+            const data = catalog[section.toLowerCase()] || { name: "Product Name", desc: "Product description goes here" };
+            for (let i = 1; i <= 20; i++) {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <span class="buy-badge">REF-${i}</span>
-                        <h3>${data.prefix}${i}</h3>
-                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">${data.extra}</p>
-                        <div class="price-tag">
-                            $${(150 + i * 12).toFixed(2)}
-                            <span style="font-size: 1.2rem; cursor: pointer;">⊕</span>
-                        </div>
+                        <div class="card-label">product card</div>
+                        <div class="product-name">${data.name} ${i}</div>
+                        <div class="product-desc">${data.desc}</div>
+                        <div class="price-badge">$${(15 * i).toFixed(2)}</div>
                     </div>`;
             }
         }
@@ -194,13 +243,11 @@
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Sistema Escuchando";
                 return;
             }
             if (command.includes("apagar sistema")) {
                 systemActive = false;
                 document.getElementById('status-dot').classList.remove('online');
-                document.getElementById('status-text').innerText = "Sistema Dormido";
                 return;
             }
             if (!systemActive) return;
@@ -224,7 +271,7 @@
             if (isSearching) {
                 if (command === "borrar todo") input.value = "";
                 else if (command === "borrar") input.value = input.value.slice(0, -1);
-                else if (!command.includes("ir a") && !command.includes("baja")) input.value = command;
+                else input.value = command;
                 
                 const val = input.value.toLowerCase();
                 document.querySelectorAll('.product-card').forEach(card => {
@@ -241,18 +288,13 @@
                         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
                         item.classList.add('active');
                         loadContent(item.innerText);
-                        isSearching = false;
-                        input.value = "";
                     }
                 });
             }
 
             if (command.includes("comprar producto")) {
-                const num = command.match(/\d+/);
-                if (num) {
-                    document.getElementById('modal-overlay').style.display = "flex";
-                    modalOpen = true;
-                }
+                document.getElementById('modal-overlay').style.display = "flex";
+                modalOpen = true;
             }
         };
 
