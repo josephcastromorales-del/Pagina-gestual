@@ -2,14 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore - Modern White Edition</title>
+    <title>TechStore AI - White & Black Edition</title>
     <style>
         :root { 
-            --sidebar-bg: #0a0a0a; --main-bg: #ffffff; --accent: #007bff; 
-            --text-dark: #1a1a1a; --text-light: #94a3b8; --border: #f1f5f9;
+            --bg-main: #ffffff; /* Fondo de productos blanco */
+            --sidebar: #0a0a0a; /* Sidebar negro solicitado */
+            --accent: #007bff; 
+            --text-dark: #1a1a1a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --card-border: #f1f5f9;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--main-bg); color: var(--text-dark); font-family: 'Inter', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg-main); color: var(--text-dark); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
         /* SCROLLBAR ESTÉTICA */
         ::-webkit-scrollbar { width: 6px; }
@@ -18,141 +23,120 @@
         ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
 
         /* SIDEBAR */
-        #sidebar { width: 260px; background: var(--sidebar-bg); padding: 35px 20px; flex-shrink: 0; color: white; }
-        #sidebar h2 { font-size: 1.2rem; letter-spacing: 1px; margin-bottom: 40px; text-align: center; }
-        .menu-item { padding: 14px 18px; margin-bottom: 5px; border-radius: 8px; color: #666; cursor: pointer; transition: 0.3s; font-size: 0.95rem; }
-        .menu-item.active { background: #1a1a1a; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #sidebar { width: 260px; background: var(--sidebar); padding: 30px 20px; flex-shrink: 0; color: white; }
+        .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; }
+        .menu-item.active { background: rgba(255, 255, 255, 0.1); color: #fff; border-left: 4px solid var(--accent); }
 
-        /* CONTENIDO PRINCIPAL */
-        #main-content { flex-grow: 1; padding: 50px; overflow-y: scroll; position: relative; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        
-        /* FORMULARIO AGREGAR */
-        #add-form { max-width: 500px; background: #f8fafc; padding: 30px; border-radius: 20px; border: 1px solid var(--border); }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; color: var(--text-light); text-transform: uppercase; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; font-size: 1rem; }
-        .form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+        /* CONTENIDO */
+        #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 60px; }
 
-        /* GRID Y PRODUCTOS */
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .product-card { background: white; padding: 25px; border-radius: 16px; border: 1px solid var(--border); transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        /* BUSCADOR */
+        #search-container {
+            display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; 
+            border-radius: 12px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0;
+        }
+        #search-container.open { width: 350px; padding: 5px 15px; border-color: var(--accent); opacity: 1; }
+        #search-input { background: transparent; border: none; color: var(--text-dark); padding: 10px; width: 100%; outline: none; font-size: 1rem; }
+
+        /* PRODUCTOS */
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
+        .product-card { background: #ffffff; padding: 25px; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: 0.3s; }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .product-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
-        .price { color: var(--accent); font-weight: 800; font-size: 1.2rem; }
-
-        /* NOTIFICACIÓN Y MODAL */
-        #notification-bar { position: fixed; top: 20px; right: -300px; width: 260px; background: #000; color: #fff; padding: 20px; border-radius: 12px; transition: 0.5s; z-index: 5000; font-weight: 500; }
-        #notification-bar.show { right: 20px; }
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 4000; }
-        #modal { background: white; padding: 40px; border-radius: 24px; width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .product-card.hidden { display: none; }
         
-        /* STATUS VOICE */
-        #status-ui { position: fixed; bottom: 30px; left: 290px; background: white; padding: 10px 22px; border-radius: 50px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .dot { width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; }
-        .dot.online { background: #10b981; box-shadow: 0 0 10px #10b981; }
+        .help-card { background: #f8fafc; padding: 20px; border-radius: 15px; border-left: 4px solid var(--accent); margin-bottom: 15px; color: var(--text-dark); }
+        .cmd-tag { color: var(--accent); font-weight: bold; background: rgba(0,123,255,0.1); padding: 2px 8px; border-radius: 4px; }
+
+        /* NOTIFICACIÓN LATERAL */
+        #notification-bar { position: fixed; top: 20px; right: -300px; width: 250px; background: #000000; color: #fff; padding: 20px; border-radius: 15px 0 0 15px; font-weight: bold; transition: 0.5s; z-index: 5000; box-shadow: -5px 5px 15px rgba(0,0,0,0.2); }
+        #notification-bar.show { right: 0; }
+
+        /* MODAL */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        #modal { background: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #eee; width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
+        /* STATUS UI */
+        #status-ui { position: fixed; bottom: 20px; left: 280px; background: #ffffff; padding: 10px 20px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; }
+        .dot.online { background: var(--success); }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <h2>TECH OS</h2>
+        <h2 style="color:var(--accent); margin-bottom: 30px;">TECH CORE</h2>
         <div class="menu-item active">Procesadores</div>
         <div class="menu-item">Gráficas</div>
         <div class="menu-item">Monitores</div>
-        <div class="menu-item">Agregar</div>
-        <div class="menu-item" style="margin-top: 20px; border-top: 1px dotted #333; padding-top: 20px; font-size: 0.8rem;">Controlar sistema</div>
+        <div class="menu-item">Periféricos</div>
+        <div class="menu-item" style="margin-top: 20px; color: #fff; border-top: 1px solid #333; padding-top: 20px;">Controlar sistema</div>
     </nav>
 
     <main id="main-content">
-        <header>
+        <div class="header-flex">
             <h1 id="view-title">Procesadores</h1>
-            <div id="search-container" style="display:none;"></div> </header>
+            <div id="search-container">
+                <span>🔍</span>
+                <input type="text" id="search-input" readonly placeholder="Dictado por voz...">
+            </div>
+        </div>
         <div id="products-grid"></div>
     </main>
 
-    <div id="notification-bar">✅ Operación Exitosa</div>
+    <div id="notification-bar">✅ Compra Exitosa</div>
 
     <div id="modal-overlay">
         <div id="modal">
-            <h2>¿Confirmar acción?</h2>
-            <p style="margin: 20px 0; color: var(--text-light);">Usa tu voz para decidir.</p>
-            <button onclick="finishOrder()" style="padding:12px 24px; background:var(--sidebar-bg); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600;">Confirmar</button>
-            <button onclick="closeModal()" style="padding:12px 24px; background:transparent; color:#666; border:none; border-radius:10px; cursor:pointer; margin-left:10px;">Cancelar</button>
+            <h2 id="modal-title" style="color:var(--text-dark)">Confirmar Compra</h2>
+            <p id="modal-desc" style="margin: 20px 0; color: var(--text-muted);">¿Deseas confirmar la compra?</p>
+            <button id="btn-confirm" onclick="finishOrder()" style="padding:12px 25px; background:var(--sidebar); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Confirmar</button>
+            <button id="btn-cancel" onclick="closeModal()" style="padding:12px 25px; background:#f1f5f9; color:var(--text-dark); border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Cancelar</button>
         </div>
     </div>
 
     <div id="status-ui">
         <div id="status-dot" class="dot"></div>
-        <span id="status-text" style="font-size:0.8rem; font-weight:500;">Diga "Activar sistema"</span>
+        <span id="status-text">Diga "Activar sistema"</span>
     </div>
 
     <script>
-        // DATOS ESTÁTICOS
-        let storeData = {
-            "procesadores": [
-                {id: 1, name: "Intel Core i9 13900K", price: "589.00"},
-                {id: 2, name: "AMD Ryzen 9 7950X", price: "549.00"},
-                {id: 3, name: "Intel Core i7 12700K", price: "320.00"}
-            ],
-            "gráficas": [
-                {id: 1, name: "NVIDIA RTX 4090", price: "1599.00"},
-                {id: 2, name: "AMD Radeon RX 7900 XTX", price: "999.00"}
-            ],
-            "monitores": [
-                {id: 1, name: "Alienware 34 Curved", price: "899.00"},
-                {id: 2, name: "LG UltraGear 27", price: "350.00"}
-            ]
+        const catalog = {
+            "procesadores": { prefix: "Intel Core i", extra: "12va Gen" },
+            "gráficas": { prefix: "NVIDIA RTX ", extra: "Ray Tracing" },
+            "monitores": { prefix: "Samsung Odyssey ", extra: "144Hz" },
+            "periféricos": { prefix: "Logitech Pro ", extra: "Wireless" }
         };
 
         function loadContent(section) {
             const grid = document.getElementById('products-grid');
             const title = document.getElementById('view-title');
-            title.innerText = section;
             grid.innerHTML = "";
+            title.innerText = section;
 
-            if(section.toLowerCase() === "agregar") {
+            if (section.toLowerCase() === "controlar sistema") {
+                document.getElementById('search-container').classList.remove('open');
+                grid.style.display = "block";
                 grid.innerHTML = `
-                    <div id="add-form">
-                        <div class="form-group"><label>Nombre</label><input type="text" id="add-name" placeholder="Ej: Teclado Pro"></div>
-                        <div class="form-group"><label>Sección (Procesadores, Gráficas o Monitores)</label><input type="text" id="add-sec" placeholder="Ej: Procesadores"></div>
-                        <div class="form-group"><label>Precio ($)</label><input type="text" id="add-price" placeholder="Ej: 150.00"></div>
-                        <button onclick="addNewProduct()" style="width:100%; padding:15px; background:var(--sidebar-bg); color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">AGREGAR PRODUCTO</button>
-                    </div>`;
+                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Úsalos en la ventana de compra.</div>
+                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Enciende el asistente.</div>
+                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Cambia de categoría.</div>
+                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre el buscador.</div>
+                    <div class="help-card"><span class="cmd-tag">Borrar / Borrar todo</span> Edita el texto.</div>
+                `;
                 return;
             }
 
-            if(section.toLowerCase() === "controlar sistema") {
-                grid.innerHTML = `<div style="line-height:2"><b>Activar sistema</b> - Iniciar<br><b>Ir a [Sección]</b> - Navegar<br><b>Confirmar/Cancelar</b> - En ventanas<br><b>Comprar producto [ID]</b> - Comprar</div>`;
-                return;
-            }
-
-            const items = storeData[section.toLowerCase()] || [];
-            items.forEach(item => {
+            grid.style.display = "grid";
+            const data = catalog[section.toLowerCase()] || { prefix: "Item", extra: "V1" };
+            for (let i = 1; i <= 50; i++) {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <span style="font-size:0.7rem; color:var(--text-light); font-weight:bold;">ID: ${item.id}</span>
-                        <h3>${item.name}</h3>
-                        <p class="price">$${item.price}</p>
+                        <span style="color:var(--accent); font-weight:bold; font-size:0.7rem;">REF-${i}</span>
+                        <h3 style="margin: 8px 0;">${data.prefix}${i}</h3>
+                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">${data.extra}</p>
+                        <p style="font-weight:bold; color:var(--text-dark); font-size:1.1rem;">$${(200 + i * 5).toFixed(2)}</p>
                     </div>`;
-            });
-        }
-
-        function addNewProduct() {
-            const name = document.getElementById('add-name').value;
-            const sec = document.getElementById('add-sec').value.toLowerCase();
-            const price = document.getElementById('add-price').value;
-
-            if(storeData[sec]) {
-                storeData[sec].push({ id: storeData[sec].length + 1, name, price });
-                notify("✅ Producto Añadido");
-                setTimeout(() => {
-                    document.querySelectorAll('.menu-item').forEach(m => {
-                        if(m.innerText.toLowerCase() === sec) m.click();
-                    });
-                }, 1000);
-            } else {
-                alert("Esa sección no existe.");
             }
         }
 
@@ -163,57 +147,86 @@
         recognition.continuous = true;
 
         let systemActive = false;
+        let isSearching = false;
         let modalOpen = false;
 
         window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            
+            const input = document.getElementById('search-input');
+
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Sistema en escucha";
                 return;
             }
-
+            if (command.includes("apagar sistema")) {
+                systemActive = false;
+                document.getElementById('status-dot').classList.remove('online');
+                return;
+            }
             if (!systemActive) return;
 
             if (modalOpen) {
-                if (command === "confirmar") finishOrder();
-                if (command === "cancelar") closeModal();
+                if (command === "confirmar") { finishOrder(); return; }
+                if (command === "cancelar") { closeModal(); return; }
+            }
+
+            if (command === "buscar") {
+                isSearching = true;
+                document.getElementById('search-container').classList.add('open');
+                return;
+            }
+            if (command === "apagar buscador") {
+                isSearching = false;
+                document.getElementById('search-container').classList.remove('open');
                 return;
             }
 
-            // NAVEGACIÓN
-            if (command.includes("ir a") || command === "agregar") {
+            if (isSearching) {
+                if (command === "borrar todo") input.value = "";
+                else if (command === "borrar") input.value = input.value.slice(0, -1);
+                else if (!command.includes("ir a") && !command.includes("baja")) input.value = command;
+                
+                const val = input.value.toLowerCase();
+                document.querySelectorAll('.product-card').forEach(card => {
+                    card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(val));
+                });
+            }
+
+            if (command.includes("baja")) document.getElementById('main-content').scrollBy(0, 500);
+            if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
+
+            if (command.includes("ir a") || command.includes("controlar sistema")) {
                 document.querySelectorAll('.menu-item').forEach(item => {
                     if (command.includes(item.innerText.toLowerCase())) {
                         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
                         item.classList.add('active');
                         loadContent(item.innerText);
+                        isSearching = false;
+                        input.value = "";
                     }
                 });
             }
 
-            // COMPRA
             if (command.includes("comprar producto")) {
                 const num = command.match(/\d+/);
                 if (num) {
-                    modalOpen = true;
+                    document.getElementById('modal-title').innerText = "Comprar Producto " + num[0];
                     document.getElementById('modal-overlay').style.display = "flex";
+                    modalOpen = true;
                 }
             }
-
-            if (command.includes("baja")) document.getElementById('main-content').scrollBy(0, 500);
-            if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
         };
 
-        function closeModal() { document.getElementById('modal-overlay').style.display = "none"; modalOpen = false; }
-        function finishOrder() { closeModal(); notify("✅ Compra Exitosa"); }
-        function notify(msg) {
+        function closeModal() { 
+            document.getElementById('modal-overlay').style.display = "none"; 
+            modalOpen = false;
+        }
+        function finishOrder() {
+            closeModal();
             const bar = document.getElementById('notification-bar');
-            bar.innerText = msg;
             bar.classList.add('show');
             setTimeout(() => bar.classList.remove('show'), 3000);
         }
