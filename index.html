@@ -2,110 +2,142 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - White & Black Edition</title>
+    <title>TechStore AI - Premium Cards</title>
     <style>
         :root { 
-            --bg-main: #ffffff; /* Fondo de productos blanco */
-            --sidebar: #0a0a0a; /* Sidebar negro solicitado */
+            --bg-main: #fcfcfc; /* Blanco roto para resaltar las tarjetas */
+            --sidebar: #0a0a0a; 
             --accent: #007bff; 
             --text-dark: #1a1a1a;
             --text-muted: #64748b;
             --success: #10b981;
-            --card-border: #f1f5f9;
+            --card-bg: #ffffff;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg-main); color: var(--text-dark); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg-main); color: var(--text-dark); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
         /* SCROLLBAR ESTÉTICA */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
         /* SIDEBAR */
-        #sidebar { width: 260px; background: var(--sidebar); padding: 30px 20px; flex-shrink: 0; color: white; }
-        .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; }
-        .menu-item.active { background: rgba(255, 255, 255, 0.1); color: #fff; border-left: 4px solid var(--accent); }
+        #sidebar { width: 260px; background: var(--sidebar); padding: 30px 20px; flex-shrink: 0; color: white; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+        .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; font-weight: 500; }
+        .menu-item.active { background: #1a1a1a; color: #fff; border-left: 4px solid var(--accent); }
 
         /* CONTENIDO */
         #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 60px; }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; height: 60px; }
+        h1 { font-size: 2rem; font-weight: 700; color: #111; }
 
         /* BUSCADOR */
         #search-container {
-            display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; 
-            border-radius: 12px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0;
+            display: flex; align-items: center; background: #fff; border: 1px solid #e5e7eb; 
+            border-radius: 14px; width: 0; overflow: hidden; transition: 0.4s ease-in-out; opacity: 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         #search-container.open { width: 350px; padding: 5px 15px; border-color: var(--accent); opacity: 1; }
         #search-input { background: transparent; border: none; color: var(--text-dark); padding: 10px; width: 100%; outline: none; font-size: 1rem; }
 
-        /* PRODUCTOS */
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
-        .product-card { background: #ffffff; padding: 25px; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: 0.3s; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        /* PRODUCTOS - LAS CAJAS */
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        .product-card { 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 24px; 
+            border: 1px solid #edf2f7; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04), 0 4px 6px -2px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.08); 
+            border-color: var(--accent);
+        }
         .product-card.hidden { display: none; }
         
-        .help-card { background: #f8fafc; padding: 20px; border-radius: 15px; border-left: 4px solid var(--accent); margin-bottom: 15px; color: var(--text-dark); }
-        .cmd-tag { color: var(--accent); font-weight: bold; background: rgba(0,123,255,0.1); padding: 2px 8px; border-radius: 4px; }
+        .product-card h3 { font-size: 1.15rem; margin: 12px 0 8px 0; color: #1a202c; }
+        .product-card .price-tag { 
+            margin-top: auto;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .buy-badge { font-size: 0.7rem; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; color: #475569; text-transform: uppercase; font-weight: bold; }
 
-        /* NOTIFICACIÓN LATERAL */
-        #notification-bar { position: fixed; top: 20px; right: -300px; width: 250px; background: #000000; color: #fff; padding: 20px; border-radius: 15px 0 0 15px; font-weight: bold; transition: 0.5s; z-index: 5000; box-shadow: -5px 5px 15px rgba(0,0,0,0.2); }
-        #notification-bar.show { right: 0; }
+        /* AYUDA */
+        .help-card { background: #fff; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .cmd-tag { color: var(--accent); font-weight: bold; background: rgba(0,123,255,0.08); padding: 3px 10px; border-radius: 6px; }
+
+        /* NOTIFICACIÓN */
+        #notification-bar { position: fixed; top: 20px; right: -300px; width: 280px; background: #000; color: #fff; padding: 22px; border-radius: 16px; font-weight: bold; transition: 0.5s; z-index: 5000; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        #notification-bar.show { right: 20px; }
 
         /* MODAL */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        #modal { background: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #eee; width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        #modal { background: #ffffff; padding: 45px; border-radius: 32px; width: 420px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
 
-        /* STATUS UI */
-        #status-ui { position: fixed; bottom: 20px; left: 280px; background: #ffffff; padding: 10px 20px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        /* STATUS */
+        #status-ui { position: fixed; bottom: 25px; left: 285px; background: #fff; padding: 12px 25px; border-radius: 50px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; }
-        .dot.online { background: var(--success); }
+        .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <h2 style="color:var(--accent); margin-bottom: 30px;">TECH CORE</h2>
+        <h2 style="color:var(--accent); font-size: 1.5rem; margin-bottom: 40px; text-align: center; letter-spacing: -1px;">TECH CORE</h2>
         <div class="menu-item active">Procesadores</div>
         <div class="menu-item">Gráficas</div>
         <div class="menu-item">Monitores</div>
         <div class="menu-item">Periféricos</div>
-        <div class="menu-item" style="margin-top: 20px; color: #fff; border-top: 1px solid #333; padding-top: 20px;">Controlar sistema</div>
+        <div class="menu-item" style="margin-top: 25px; padding-top: 25px; border-top: 1px solid #222;">Controlar sistema</div>
     </nav>
 
     <main id="main-content">
         <div class="header-flex">
             <h1 id="view-title">Procesadores</h1>
             <div id="search-container">
-                <span>🔍</span>
-                <input type="text" id="search-input" readonly placeholder="Dictado por voz...">
+                <span style="margin-left: 5px;">🔍</span>
+                <input type="text" id="search-input" readonly placeholder="Dictando búsqueda...">
             </div>
         </div>
         <div id="products-grid"></div>
     </main>
 
-    <div id="notification-bar">✅ Compra Exitosa</div>
+    <div id="notification-bar">✅ Compra realizada con éxito</div>
 
     <div id="modal-overlay">
         <div id="modal">
-            <h2 id="modal-title" style="color:var(--text-dark)">Confirmar Compra</h2>
-            <p id="modal-desc" style="margin: 20px 0; color: var(--text-muted);">¿Deseas confirmar la compra?</p>
-            <button id="btn-confirm" onclick="finishOrder()" style="padding:12px 25px; background:var(--sidebar); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Confirmar</button>
-            <button id="btn-cancel" onclick="closeModal()" style="padding:12px 25px; background:#f1f5f9; color:var(--text-dark); border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Cancelar</button>
+            <div style="background: #f0f7ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--accent); font-size: 1.5rem;">🛒</div>
+            <h2 id="modal-title" style="color:#111; margin-bottom: 10px;">Confirmar Pedido</h2>
+            <p id="modal-desc" style="color: var(--text-muted); margin-bottom: 30px;">Di "Confirmar" para procesar tu compra o "Cancelar" para volver.</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="btn-confirm" onclick="finishOrder()" style="padding:14px 28px; background:var(--sidebar); color:white; border:none; border-radius:14px; cursor:pointer; font-weight:bold; transition: 0.2s;">Confirmar</button>
+                <button id="btn-cancel" onclick="closeModal()" style="padding:14px 28px; background:#f1f5f9; color:#475569; border:none; border-radius:14px; cursor:pointer; font-weight:bold;">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <div id="status-ui">
         <div id="status-dot" class="dot"></div>
-        <span id="status-text">Diga "Activar sistema"</span>
+        <span id="status-text" style="font-weight: 600; color: #444;">Diga "Activar sistema"</span>
     </div>
 
     <script>
         const catalog = {
-            "procesadores": { prefix: "Intel Core i", extra: "12va Gen" },
-            "gráficas": { prefix: "NVIDIA RTX ", extra: "Ray Tracing" },
-            "monitores": { prefix: "Samsung Odyssey ", extra: "144Hz" },
-            "periféricos": { prefix: "Logitech Pro ", extra: "Wireless" }
+            "procesadores": { prefix: "Intel Core i", extra: "12va Generación" },
+            "gráficas": { prefix: "NVIDIA RTX ", extra: "Serie 4000" },
+            "monitores": { prefix: "LG UltraGear ", extra: "IPS 1ms" },
+            "periféricos": { prefix: "Razer DeathAdder ", extra: "V3 Pro" }
         };
 
         function loadContent(section) {
@@ -118,24 +150,27 @@
                 document.getElementById('search-container').classList.remove('open');
                 grid.style.display = "block";
                 grid.innerHTML = `
-                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Úsalos en la ventana de compra.</div>
-                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Enciende el asistente.</div>
-                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Cambia de categoría.</div>
-                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre el buscador.</div>
-                    <div class="help-card"><span class="cmd-tag">Borrar / Borrar todo</span> Edita el texto.</div>
+                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Directo en el carrito.</div>
+                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Despierta al asistente.</div>
+                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Navega por la tienda.</div>
+                    <div class="help-card"><span class="cmd-tag">Buscar</span> Inicia el buscador.</div>
+                    <div class="help-card"><span class="cmd-tag">Borrar todo</span> Limpia la búsqueda.</div>
                 `;
                 return;
             }
 
             grid.style.display = "grid";
-            const data = catalog[section.toLowerCase()] || { prefix: "Item", extra: "V1" };
+            const data = catalog[section.toLowerCase()] || { prefix: "Producto ", extra: "Premium" };
             for (let i = 1; i <= 50; i++) {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <span style="color:var(--accent); font-weight:bold; font-size:0.7rem;">REF-${i}</span>
-                        <h3 style="margin: 8px 0;">${data.prefix}${i}</h3>
-                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">${data.extra}</p>
-                        <p style="font-weight:bold; color:var(--text-dark); font-size:1.1rem;">$${(200 + i * 5).toFixed(2)}</p>
+                        <span class="buy-badge">REF-${i}</span>
+                        <h3>${data.prefix}${i}</h3>
+                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:20px;">${data.extra}</p>
+                        <div class="price-tag">
+                            $${(150 + i * 12).toFixed(2)}
+                            <span style="font-size: 1.2rem; cursor: pointer;">⊕</span>
+                        </div>
                     </div>`;
             }
         }
@@ -159,11 +194,13 @@
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
+                document.getElementById('status-text').innerText = "Sistema Escuchando";
                 return;
             }
             if (command.includes("apagar sistema")) {
                 systemActive = false;
                 document.getElementById('status-dot').classList.remove('online');
+                document.getElementById('status-text').innerText = "Sistema Dormido";
                 return;
             }
             if (!systemActive) return;
@@ -213,17 +250,13 @@
             if (command.includes("comprar producto")) {
                 const num = command.match(/\d+/);
                 if (num) {
-                    document.getElementById('modal-title').innerText = "Comprar Producto " + num[0];
                     document.getElementById('modal-overlay').style.display = "flex";
                     modalOpen = true;
                 }
             }
         };
 
-        function closeModal() { 
-            document.getElementById('modal-overlay').style.display = "none"; 
-            modalOpen = false;
-        }
+        function closeModal() { document.getElementById('modal-overlay').style.display = "none"; modalOpen = false; }
         function finishOrder() {
             closeModal();
             const bar = document.getElementById('notification-bar');
