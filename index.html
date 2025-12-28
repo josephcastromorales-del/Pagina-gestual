@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - Ultra Custom</title>
+    <title>TechStore AI - Direct Voice</title>
     <style>
         :root { 
             --bg: #020205; --sidebar: #050a15; --accent: #007bff; 
@@ -11,16 +11,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR */
         #sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #1e293b; padding: 30px 20px; flex-shrink: 0; }
         .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; }
         .menu-item.active { background: rgba(0, 123, 255, 0.15); color: #fff; border-left: 4px solid var(--accent); }
 
-        /* CONTENIDO */
         #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 60px; }
 
-        /* BUSCADOR */
         #search-container {
             display: flex; align-items: center; background: #0f172a; border: 1px solid #1e293b; 
             border-radius: 12px; width: 0; overflow: hidden; transition: 0.4s; opacity: 0;
@@ -28,20 +25,16 @@
         #search-container.open { width: 350px; padding: 5px 15px; border-color: var(--accent); opacity: 1; }
         #search-input { background: transparent; border: none; color: white; padding: 10px; width: 100%; outline: none; font-size: 1rem; }
 
-        /* GRID Y CARDS */
         #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
         .product-card { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #1e293b; transition: 0.3s; }
         .product-card.hidden { display: none; }
         
-        /* SECCIÓN AYUDA */
         .help-card { background: #0f172a; padding: 20px; border-radius: 15px; border-left: 4px solid var(--accent); margin-bottom: 15px; }
         .cmd-tag { color: var(--accent); font-weight: bold; background: rgba(0,123,255,0.1); padding: 2px 8px; border-radius: 4px; }
 
-        /* NOTIFICACIÓN LATERAL */
         #notification-bar { position: fixed; top: 20px; right: -300px; width: 250px; background: var(--success); color: #000; padding: 20px; border-radius: 15px 0 0 15px; font-weight: bold; transition: 0.5s; z-index: 5000; }
         #notification-bar.show { right: 0; }
 
-        /* MODAL */
         #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 3000; }
         #modal { background: #0f172a; padding: 40px; border-radius: 24px; border: 1px solid var(--accent); width: 400px; text-align: center; }
 
@@ -77,9 +70,9 @@
     <div id="modal-overlay">
         <div id="modal">
             <h2 id="modal-title">Confirmar Compra</h2>
-            <p id="modal-desc" style="margin: 20px 0; color: #94a3b8;">¿Deseas confirmar la compra de este producto?</p>
-            <button onclick="finishOrder()" style="padding:12px 25px; background:var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Confirmar</button>
-            <button onclick="closeModal()" style="padding:12px 25px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Cancelar</button>
+            <p id="modal-desc" style="margin: 20px 0; color: #94a3b8;">¿Deseas confirmar la compra?</p>
+            <button id="btn-confirm" onclick="finishOrder()" style="padding:12px 25px; background:var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Confirmar</button>
+            <button id="btn-cancel" onclick="closeModal()" style="padding:12px 25px; background:#1e293b; color:white; border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Cancelar</button>
         </div>
     </div>
 
@@ -91,8 +84,8 @@
     <script>
         const catalog = {
             "procesadores": { prefix: "Intel Core i", color: "Azul", extra: "12va Gen" },
-            "gráficas": { prefix: "NVIDIA RTX ", color: "Green", extra: "Ray Tracing" },
-            "monitores": { prefix: "Samsung Odyssey G", color: "UHD", extra: "144Hz" },
+            "gráficas": { prefix: "NVIDIA RTX ", color: "Verde", extra: "Ray Tracing" },
+            "monitores": { prefix: "Samsung Odyssey ", color: "UHD", extra: "144Hz" },
             "periféricos": { prefix: "Logitech Pro ", color: "RGB", extra: "Wireless" }
         };
 
@@ -106,15 +99,11 @@
                 document.getElementById('search-container').classList.remove('open');
                 grid.style.display = "block";
                 grid.innerHTML = `
-                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Enciende el asistente de voz.</div>
-                    <div class="help-card"><span class="cmd-tag">Baja / Sube</span> Desplaza la página verticalmente.</div>
-                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Navega entre Procesadores, Gráficas, etc.</div>
-                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre la barra de búsqueda y activa el dictado.</div>
-                    <div class="help-card"><span class="cmd-tag">Borrar</span> Elimina el último caracter del buscador.</div>
-                    <div class="help-card"><span class="cmd-tag">Borrar todo</span> Limpia toda la búsqueda actual.</div>
-                    <div class="help-card"><span class="cmd-tag">Apagar buscador</span> Oculta la barra pero mantiene los filtros.</div>
-                    <div class="help-card"><span class="cmd-tag">Comprar producto [Número]</span> Abre el modal de confirmación.</div>
-                    <div class="help-card"><span class="cmd-tag">Clic en Confirmar</span> Finaliza la compra en el modal.</div>
+                    <div class="help-card"><span class="cmd-tag">Confirmar / Cancelar</span> Úsalos directamente en la ventana de compra.</div>
+                    <div class="help-card"><span class="cmd-tag">Activar sistema</span> Enciende el asistente.</div>
+                    <div class="help-card"><span class="cmd-tag">Ir a [Sección]</span> Cambia de categoría.</div>
+                    <div class="help-card"><span class="cmd-tag">Buscar</span> Abre el buscador por voz.</div>
+                    <div class="help-card"><span class="cmd-tag">Borrar / Borrar todo</span> Edita el texto del buscador.</div>
                 `;
                 return;
             }
@@ -126,7 +115,7 @@
                     <div class="product-card">
                         <span style="color:var(--accent); font-weight:bold; font-size:0.7rem;">REF-${i}</span>
                         <h3>${data.prefix}${i}</h3>
-                        <p style="color:#64748b; font-size:0.85rem; margin:10px 0;">${data.extra} - Edición ${data.color}</p>
+                        <p style="color:#64748b; font-size:0.85rem; margin:10px 0;">${data.extra}</p>
                         <p style="font-weight:bold; color:white;">$${(Math.random()*800 + 200).toFixed(2)}</p>
                     </div>`;
             }
@@ -140,6 +129,7 @@
 
         let systemActive = false;
         let isSearching = false;
+        let modalOpen = false;
 
         window.onload = () => recognition.start();
 
@@ -150,16 +140,20 @@
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Escuchando...";
                 return;
             }
             if (command.includes("apagar sistema")) {
                 systemActive = false;
                 document.getElementById('status-dot').classList.remove('online');
-                document.getElementById('status-text').innerText = "Sistema Apagado";
                 return;
             }
             if (!systemActive) return;
+
+            // COMANDOS DIRECTOS PARA EL MODAL
+            if (modalOpen) {
+                if (command === "confirmar") { finishOrder(); return; }
+                if (command === "cancelar") { closeModal(); return; }
+            }
 
             // BUSCADOR
             if (command === "buscar") {
@@ -174,13 +168,9 @@
             }
 
             if (isSearching) {
-                if (command === "borrar todo") {
-                    input.value = "";
-                } else if (command === "borrar") {
-                    input.value = input.value.slice(0, -1);
-                } else if (!command.includes("ir a") && !command.includes("baja")) {
-                    input.value = command;
-                }
+                if (command === "borrar todo") input.value = "";
+                else if (command === "borrar") input.value = input.value.slice(0, -1);
+                else if (!command.includes("ir a") && !command.includes("baja")) input.value = command;
                 
                 const val = input.value.toLowerCase();
                 document.querySelectorAll('.product-card').forEach(card => {
@@ -193,10 +183,9 @@
             if (command.includes("sube")) document.getElementById('main-content').scrollBy(0, -500);
 
             if (command.includes("ir a") || command.includes("controlar sistema")) {
-                const items = document.querySelectorAll('.menu-item');
-                items.forEach(item => {
+                document.querySelectorAll('.menu-item').forEach(item => {
                     if (command.includes(item.innerText.toLowerCase())) {
-                        items.forEach(m => m.classList.remove('active'));
+                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
                         item.classList.add('active');
                         loadContent(item.innerText);
                         isSearching = false;
@@ -211,17 +200,15 @@
                 if (num) {
                     document.getElementById('modal-title').innerText = "Comprar Producto " + num[0];
                     document.getElementById('modal-overlay').style.display = "flex";
+                    modalOpen = true;
                 }
-            }
-            if (command.includes("clic en")) {
-                const target = command.replace("clic en", "").trim();
-                document.querySelectorAll('button').forEach(btn => {
-                    if (btn.innerText.toLowerCase().includes(target)) btn.click();
-                });
             }
         };
 
-        function closeModal() { document.getElementById('modal-overlay').style.display = "none"; }
+        function closeModal() { 
+            document.getElementById('modal-overlay').style.display = "none"; 
+            modalOpen = false;
+        }
         function finishOrder() {
             closeModal();
             const bar = document.getElementById('notification-bar');
