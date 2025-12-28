@@ -2,95 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechOS - Gesture Slider</title>
+    <title>TechOS - Invisible Control</title>
     <style>
         :root { --accent: #00ffcc; --bg: #050505; }
-        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
-        body { background: var(--bg); color: white; font-family: 'Orbitron', sans-serif; overflow: hidden; height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
         
-        /* Contenedor del Carrusel */
-        #slider-container {
-            height: 100vh; display: flex; align-items: center; justify-content: center;
-            perspective: 1000px; position: relative; z-index: 10;
+        /* Contenedor principal FIJO y CENTRADO */
+        #main-stage {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 380px; height: 600px;
+            border: 3px solid var(--accent); border-radius: 40px;
+            overflow: hidden; background: #000;
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.1);
         }
 
         #cards-track {
-            display: flex; gap: 50px; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            transform: translateX(0px);
+            display: flex; height: 100%; width: 100%;
+            transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
 
-        .interactive {
-            min-width: 300px; height: 450px; background: #111; border-radius: 30px;
-            border: 2px solid #222; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 20px;
-            transition: 0.4s; position: relative;
+        .card {
+            min-width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: linear-gradient(180deg, #111 0%, #000 100%);
+            border-right: 1px solid #222;
         }
+
+        .card h1 { font-size: 6rem; color: var(--accent); margin-bottom: 20px; }
+        .card p { letter-spacing: 5px; opacity: 0.7; }
+
+        /* Cámara pequeña y discreta */
+        #camera-feed { position: fixed; bottom: 20px; right: 20px; width: 100px; opacity: 0.4; }
+        #input_video { width: 100%; transform: scaleX(-1); border-radius: 10px; border: 1px solid #333; }
         
-        .interactive.active { border-color: var(--accent); box-shadow: 0 0 50px rgba(0,255,204,0.15); transform: scale(1.1); }
-        .interactive.hover-effect { background: #1a1a1a; border-color: white; }
-
-        /* Cámara */
-        #camera-feed { position: fixed; bottom: 15px; left: 15px; width: 140px; opacity: 0.3; z-index: 1000; }
-        #input_video { width: 100%; transform: scaleX(-1); border-radius: 8px; }
-
-        #canvas-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
-        #activate-btn { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; padding: 15px 30px; background: var(--accent); border: none; border-radius: 50px; font-weight: bold; }
+        #activate-btn {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 15px 40px; background: var(--accent); color: black;
+            border: none; border-radius: 50px; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <button id="activate-btn">ACTIVAR CARRUSEL</button>
+    <button id="activate-btn">INICIAR CONTROL INVISIBLE</button>
 
     <div id="camera-feed"><video id="input_video" playsinline></video></div>
 
-    <div id="slider-container">
+    <div id="main-stage">
         <div id="cards-track">
-            <div class="interactive" onclick="window.open('https://youtube.com')"><h1>01</h1><p>YOUTUBE</p></div>
-            <div class="interactive"><h1>02</h1><p>PROYECTOS</p></div>
-            <div class="interactive"><h1>03</h1><p>SISTEMA</p></div>
-            <div class="interactive"><h1>04</h1><p>CONFIG</p></div>
-            <div class="interactive"><h1>05</h1><p>REDES</p></div>
+            <div class="card" data-url="https://youtube.com"><h1>01</h1><p>YOUTUBE</p></div>
+            <div class="card" data-url="https://google.com"><h1>02</h1><p>SEARCH</p></div>
+            <div class="card" data-url="https://github.com"><h1>03</h1><p>CODE</p></div>
+            <div class="card" data-url="#"><h1>04</h1><p>CONFIG</p></div>
         </div>
     </div>
 
-    <div id="canvas-container"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
     <script>
-        let smoothX = 0, smoothY = 0, lastH = null, canClick = true;
         let currentIndex = 0;
         let lastHandX = 0;
-        let swipeThreshold = 0.15; // Sensibilidad del movimiento lateral
         let canSwipe = true;
+        let canClick = true;
 
         const track = document.getElementById('cards-track');
-        const cards = document.querySelectorAll('.interactive');
+        const cards = document.querySelectorAll('.card');
 
-        // Three.js Cursor
-        const scene = new THREE.Scene();
-        const cam3d = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100);
-        cam3d.position.z = 5;
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        const cursor = new THREE.Group();
-        const mainDot = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 32), new THREE.MeshBasicMaterial({ color: 0x00ffcc }));
-        const ring = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.24, 32), new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.4 }));
-        cursor.add(mainDot, ring);
-        scene.add(cursor);
-
-        function updateSlider() {
-            const cardWidth = 350; // Ancho + Gap
-            const offset = -currentIndex * cardWidth;
-            track.style.transform = `translateX(${offset}px)`;
-            
-            cards.forEach((c, i) => {
-                c.classList.toggle('active', i === currentIndex);
-            });
+        function updateShorts() {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
 
         function onResults(res) {
@@ -98,71 +81,51 @@
                 const hand = res.multiHandLandmarks[0];
                 const thumb = hand[4], index = hand[8];
 
-                // Movimiento Cursor
-                const tx = (index.x - 0.5) * -15; 
-                const ty = (index.y - 0.5) * -10;
-                smoothX += (tx - smoothX) * 0.25;
-                smoothY += (ty - smoothY) * 0.25;
-                cursor.position.set(smoothX, smoothY, 0);
-
-                // Lógica de Swipe (Deslizar)
+                // --- LÓGICA DE SWIPE GLOBAL ---
                 const currentHandX = index.x;
                 const deltaX = currentHandX - lastHandX;
 
-                if (canSwipe && Math.abs(deltaX) > swipeThreshold) {
-                    if (deltaX > 0 && currentIndex > 0) { // Mover a la izquierda (mano a la derecha)
+                // Detecta movimiento rápido (Swipe)
+                if (canSwipe && Math.abs(deltaX) > 0.15) {
+                    if (deltaX > 0 && currentIndex > 0) { // Swipe Mano a la Derecha -> Tarjeta Anterior
                         currentIndex--;
                         canSwipe = false;
-                    } else if (deltaX < 0 && currentIndex < cards.length - 1) { // Mover a la derecha (mano a la izquierda)
+                    } else if (deltaX < 0 && currentIndex < cards.length - 1) { // Swipe Mano a la Izquierda -> Siguiente Tarjeta
                         currentIndex++;
                         canSwipe = false;
                     }
-                    updateSlider();
-                    setTimeout(() => canSwipe = true, 500); // Cooldown de swipe
+                    updateShorts();
+                    // Tiempo de espera para el siguiente swipe
+                    setTimeout(() => canSwipe = true, 500);
                 }
                 lastHandX = currentHandX;
 
-                // Click (Pellizco)
-                const vector = new THREE.Vector3(cursor.position.x, cursor.position.y, 0);
-                vector.project(cam3d);
-                const sx = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                const sy = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-
-                const target = document.elementFromPoint(sx, sy)?.closest('.interactive');
-                
-                if (target !== lastH) {
-                    if (lastH) lastH.classList.remove('hover-effect');
-                    if (target) target.classList.add('hover-effect');
-                    lastH = target;
-                }
-
-                const dClick = Math.hypot(index.x - thumb.x, index.y - thumb.y);
-                if (dClick < 0.045 && canClick && target) {
-                    target.click();
+                // --- LÓGICA DE CLICK GLOBAL (Pellizco) ---
+                const distance = Math.hypot(index.x - thumb.x, index.y - thumb.y);
+                if (distance < 0.05 && canClick) {
+                    const activeCard = cards[currentIndex];
+                    const url = activeCard.getAttribute('data-url');
+                    
+                    console.log("Abriendo:", url);
+                    if (url && url !== "#") window.open(url, '_blank');
+                    
                     canClick = false;
-                    setTimeout(() => canClick = true, 800);
+                    setTimeout(() => canClick = true, 1000); // Evita clics repetidos
                 }
             }
         }
 
         document.getElementById('activate-btn').onclick = function() {
             this.style.display = 'none';
-            updateSlider();
             const hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-            hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.8 });
+            hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.75 });
             hands.onResults(onResults);
+
             new Camera(document.getElementById('input_video'), {
                 onFrame: async () => { await hands.send({image: document.getElementById('input_video')}); },
                 width: 640, height: 480
             }).start();
         };
-
-        function animate() { 
-            requestAnimationFrame(animate); 
-            ring.rotation.z += 0.02;
-            renderer.render(scene, cam3d); 
-        }
-        animate();
     </script>
 </body>
 </html>
