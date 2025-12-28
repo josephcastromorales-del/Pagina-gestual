@@ -2,48 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore AI - Persistent Search</title>
+    <title>TechStore AI - Smart Editor</title>
     <style>
         :root { 
             --bg: #020205; --sidebar: #050a15; --accent: #007bff; 
             --text: #ffffff; --card-bg: #0d1117; --success: #10b981;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* SIDEBAR */
-        #sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid #1e293b; padding: 30px 20px; flex-shrink: 0; }
-        .menu-item { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; color: #94a3b8; cursor: pointer; transition: 0.3s; }
-        .menu-item.active { background: rgba(0, 123, 255, 0.15); color: #fff; border-left: 4px solid var(--accent); }
+        /* Estructura */
+        #sidebar { width: 250px; background: var(--sidebar); border-right: 1px solid #1e293b; padding: 30px; flex-shrink: 0; }
+        .menu-item { padding: 12px; margin-bottom: 10px; border-radius: 8px; color: #64748b; cursor: pointer; transition: 0.3s; }
+        .menu-item.active { background: rgba(0, 123, 255, 0.1); color: #fff; border-left: 4px solid var(--accent); }
 
-        /* CONTENIDO */
         #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
-        
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 50px; }
-        
-        /* BUSCADOR */
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+        /* Buscador Animado */
         #search-container {
             display: flex; align-items: center; background: #0f172a; 
-            border: 1px solid #1e293b; border-radius: 10px; padding: 0;
-            width: 0; overflow: hidden; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
+            border: 2px solid transparent; border-radius: 12px; 
+            width: 0; overflow: hidden; transition: all 0.4s ease; opacity: 0;
         }
         #search-container.open { width: 350px; padding: 5px 15px; border-color: var(--accent); opacity: 1; }
-        #search-input { background: transparent; border: none; color: white; padding: 10px; width: 100%; outline: none; font-size: 1rem; }
+        #search-input { background: transparent; border: none; color: white; padding: 10px; width: 100%; outline: none; font-size: 1.1rem; }
 
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
-        .product-card { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #1e293b; transition: 0.3s; }
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .product-card { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid #1e293b; transition: 0.3s; }
         .product-card.hidden { display: none; }
 
-        /* NOTIFICACIÓN LATERAL */
+        /* Notificación lateral */
         #notification-bar { position: fixed; top: 20px; right: -300px; width: 250px; background: var(--success); color: #000; padding: 20px; border-radius: 15px 0 0 15px; font-weight: bold; transition: 0.5s; z-index: 5000; }
         #notification-bar.show { right: 0; }
 
-        /* MODAL */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        #modal { background: #0f172a; padding: 40px; border-radius: 24px; border: 1px solid var(--accent); width: 400px; text-align: center; }
-        
+        /* Status */
         #status-ui { position: fixed; bottom: 20px; left: 280px; background: #0f172a; padding: 10px 20px; border-radius: 50px; border: 1px solid #1e293b; display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
         .dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; }
         .dot.online { background: var(--success); }
@@ -52,18 +45,18 @@
 <body>
 
     <nav id="sidebar">
-        <h2 style="color:var(--accent); margin-bottom: 30px;">TECH CORE</h2>
-        <div class="menu-item active">Procesadores</div>
-        <div class="menu-item">Gráficas</div>
-        <div class="menu-item">Monitores</div>
+        <h2 style="color:var(--accent); margin-bottom: 30px;">AI STORE</h2>
+        <div class="menu-item active">Hardware</div>
+        <div class="menu-item">Software</div>
+        <div class="menu-item">Gadgets</div>
     </nav>
 
     <main id="main-content">
         <div class="header-flex">
-            <h1 id="view-title">Procesadores</h1>
+            <h1 id="view-title">Hardware</h1>
             <div id="search-container">
-                <span>🔍</span>
-                <input type="text" id="search-input" placeholder="Buscando...">
+                <span style="font-size: 1.2rem;">🔍</span>
+                <input type="text" id="search-input" readonly placeholder="Escuchando...">
             </div>
         </div>
         <div id="products-grid"></div>
@@ -71,133 +64,98 @@
 
     <div id="notification-bar">✅ Compra Exitosa</div>
 
-    <div id="modal-overlay">
-        <div id="modal">
-            <h2 id="modal-title">Confirmar Compra</h2>
-            <p id="modal-item-info" style="margin: 15px 0; color: #94a3b8;"></p>
-            <button onclick="finishOrder()" style="padding:12px 25px; background:var(--accent); border:none; border-radius:10px; color:white; cursor:pointer; font-weight:bold; margin: 10px;">Confirmar</button>
-            <button onclick="closeModal()" style="padding:12px 25px; background:#1e293b; border:none; border-radius:10px; color:white; cursor:pointer; margin: 10px;">Cancelar</button>
-        </div>
-    </div>
-
     <div id="status-ui">
         <div id="status-dot" class="dot"></div>
         <span id="status-text">Di "Activar sistema"</span>
     </div>
 
     <script>
-        const sectionsData = {
-            "procesadores": { prefix: "CPU Intel" },
-            "gráficas": { prefix: "GPU RTX" },
-            "monitores": { prefix: "Display 4K" }
-        };
-
-        function loadProducts(category) {
+        function loadProducts() {
             const grid = document.getElementById('products-grid');
-            const data = sectionsData[category.toLowerCase()] || { prefix: "Item" };
             grid.innerHTML = ""; 
             for (let i = 1; i <= 50; i++) {
-                grid.innerHTML += `<div class="product-card" id="prod-${i}">
-                    <span style="color:var(--accent); font-size:0.7rem; font-weight:bold;">REF: ${i}</span>
-                    <h3 style="margin: 10px 0;">${data.prefix} ${i}</h3>
-                    <p style="color:#64748b; font-size:0.8rem;">Tecnología avanzada modelo ${i}</p>
+                grid.innerHTML += `<div class="product-card">
+                    <span style="color:var(--accent); font-weight:bold;">#${i}</span>
+                    <h3 style="margin:5px 0;">Item Pro ${i}</h3>
+                    <p style="color:#444; font-size:0.8rem;">Especificaciones del producto ${i}</p>
                 </div>`;
             }
         }
-        loadProducts("procesadores");
+        loadProducts();
 
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
         recognition.continuous = true;
 
         let systemActive = false;
-        let voiceSearchMode = false;
+        let searchMode = false;
 
         window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
             const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            console.log("Comando:", command);
-
+            const input = document.getElementById('search-input');
+            
             // CONTROL MAESTRO
             if (command.includes("activar sistema")) {
                 systemActive = true;
                 document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Sistema Activo";
                 return;
             }
             if (command.includes("apagar sistema")) {
                 systemActive = false;
                 document.getElementById('status-dot').classList.remove('online');
-                document.getElementById('status-text').innerText = "Sistema Offline";
                 return;
             }
-
             if (!systemActive) return;
 
-            // LÓGICA DEL BUSCADOR
+            // COMANDOS DE BUSCADOR
             if (command === "buscar") {
-                voiceSearchMode = true;
+                searchMode = true;
                 document.getElementById('search-container').classList.add('open');
                 return;
             }
             if (command === "apagar buscador") {
-                voiceSearchMode = false;
+                searchMode = false;
                 document.getElementById('search-container').classList.remove('open');
                 return;
             }
 
-            // Si estamos en modo búsqueda, filtramos
-            if (voiceSearchMode) {
-                document.getElementById('search-input').value = command;
-                const cards = document.querySelectorAll('.product-card');
-                cards.forEach(card => {
-                    const match = card.innerText.toLowerCase().includes(command);
-                    card.classList.toggle('hidden', !match);
+            if (searchMode) {
+                if (command === "borrar todo") {
+                    input.value = "";
+                } else if (command === "borrar") {
+                    input.value = input.value.slice(0, -1);
+                } else {
+                    // Evitamos que comandos como "baja" se escriban si el usuario solo quería bajar
+                    if (!["baja", "sube", "apagar buscador"].includes(command)) {
+                        input.value = command;
+                    }
+                }
+                
+                // Aplicar Filtro
+                const val = input.value.toLowerCase();
+                document.querySelectorAll('.product-card').forEach(card => {
+                    card.classList.toggle('hidden', !card.innerText.toLowerCase().includes(val));
                 });
             }
 
             // OTROS COMANDOS
+            if (command === "baja") document.getElementById('main-content').scrollBy(0, 400);
+            if (command === "sube") document.getElementById('main-content').scrollBy(0, -400);
+            
             if (command.includes("ir a")) {
-                const items = document.querySelectorAll('.menu-item');
-                items.forEach(item => {
+                document.querySelectorAll('.menu-item').forEach(item => {
                     if (command.includes(item.innerText.toLowerCase())) {
-                        items.forEach(m => m.classList.remove('active'));
+                        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
                         item.classList.add('active');
                         document.getElementById('view-title').innerText = item.innerText;
-                        loadProducts(item.innerText);
-                        // Reset buscador al cambiar sección
-                        document.getElementById('search-container').classList.remove('open');
-                        document.getElementById('search-input').value = "";
-                        voiceSearchMode = false;
+                        loadProducts(); // Recarga limpia
+                        input.value = ""; // Limpia buscador al cambiar sección
                     }
                 });
             }
-
-            if (command.includes("comprar producto")) {
-                const num = command.match(/\d+/);
-                if (num) openModal(num[0]);
-            }
-
-            if (command.includes("clic en")) {
-                const target = command.replace("clic en", "").trim();
-                document.querySelectorAll('button, .menu-item').forEach(el => {
-                    if (el.innerText.toLowerCase().includes(target)) el.click();
-                });
-            }
         };
-
-        function openModal(id) { 
-            document.getElementById('modal-item-info').innerText = `Producto ID: ${id} seleccionado.`;
-            document.getElementById('modal-overlay').style.display = 'flex'; 
-        }
-        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
-        function finishOrder() {
-            closeModal();
-            const bar = document.getElementById('notification-bar');
-            bar.classList.add('show');
-            setTimeout(() => bar.classList.remove('show'), 3000);
-        }
 
         recognition.onend = () => recognition.start();
     </script>
