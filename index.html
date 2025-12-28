@@ -2,33 +2,33 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechStore - Silent AI Control</title>
+    <title>TechStore - Universal Voice Control</title>
     <style>
         :root { --bg: #050505; --sidebar: #111; --accent: #00ffcc; --text: #fff; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Estilos de la tienda */
         #sidebar { width: 240px; background: var(--sidebar); border-right: 1px solid #222; padding: 25px; flex-shrink: 0; }
-        .menu-item { padding: 12px; margin-bottom: 5px; border-radius: 8px; color: #666; cursor: pointer; transition: 0.3s; }
+        .menu-item { padding: 12px; margin-bottom: 5px; border-radius: 8px; color: #666; cursor: pointer; transition: 0.3s; text-transform: capitalize; }
         .menu-item.active { background: rgba(0, 255, 204, 0.1); color: var(--accent); border-left: 3px solid var(--accent); }
 
         #main-content { flex-grow: 1; padding: 40px; overflow-y: scroll; scroll-behavior: smooth; }
-        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        #products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-top: 20px; }
         
-        .product-card { 
-            background: #111; padding: 15px; border-radius: 12px; border: 1px solid #222; 
-            height: 250px; display: flex; flex-direction: column; justify-content: space-between;
+        .product-card { background: #111; padding: 15px; border-radius: 12px; border: 1px solid #222; height: 250px; }
+        
+        /* Botón de ejemplo para probar el clic universal */
+        .btn-universal { 
+            background: var(--accent); color: #000; border: none; padding: 10px 20px; 
+            border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;
         }
-        .placeholder { height: 100px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; }
 
-        /* Indicador de Estado */
         #status-ui { 
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             padding: 12px 25px; background: #000; border: 1px solid #333; border-radius: 50px;
-            display: flex; align-items: center; gap: 10px; font-size: 0.9rem; z-index: 2000;
+            display: flex; align-items: center; gap: 10px; z-index: 2000;
         }
-        .dot { width: 8px; height: 8px; background: #ff4444; border-radius: 50%; }
+        .dot { width: 10px; height: 10px; background: #ff4444; border-radius: 50%; transition: 0.3s; }
         .dot.online { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
     </style>
 </head>
@@ -39,89 +39,105 @@
         <div class="menu-item active">Hardware</div>
         <div class="menu-item">Software</div>
         <div class="menu-item">Cámaras</div>
+        <div class="menu-item">Configuración</div>
     </nav>
 
     <main id="main-content">
-        <h1 style="margin-bottom: 25px;">Catálogo</h1>
+        <h1 id="view-title">Catálogo de Productos</h1>
+        
+        <button class="btn-universal" onclick="alert('¡Has hecho clic en el botón de Ofertas usando tu voz!')">Ofertas</button>
+
         <div id="products-grid"></div>
     </main>
 
     <div id="status-ui">
         <div id="status-dot" class="dot"></div>
-        <span id="status-text">Diga "Activar sistema" para comenzar</span>
+        <span id="status-text">Diga "Activar sistema"</span>
     </div>
 
     <script>
-        // Generar 50 productos
+        // Generar 50 productos dinámicos
         const grid = document.getElementById('products-grid');
         for (let i = 1; i <= 50; i++) {
             grid.innerHTML += `
                 <div class="product-card" id="p-${i}">
-                    <div class="placeholder">TECH-ID: ${i}</div>
-                    <p>Producto ${i}</p>
-                    <small style="color:var(--accent)">$${(Math.random() * 100 + 10).toFixed(2)}</small>
+                    <p style="color:#555">ID: ${i}</p>
+                    <h3>Producto ${i}</h3>
+                    <button class="btn-universal" onclick="console.log('Comprado ${i}')">Comprar</button>
                 </div>`;
         }
 
-        // --- MOTOR DE VOZ SILENCIOSO ---
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'es-ES';
-        recognition.continuous = true; // No se detiene, evita el "re-encendido" ruidoso
+        recognition.continuous = true;
         recognition.interimResults = false;
 
         let systemActive = false;
 
-        // Inicia el escucha en modo pasivo al cargar
-        window.onload = () => {
-            recognition.start();
-        };
+        window.onload = () => recognition.start();
 
         recognition.onresult = (event) => {
-            const result = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            console.log("Escuchado:", result);
+            const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
 
-            // COMANDO DE ACTIVACIÓN
-            if (result.includes("activar sistema")) {
+            console.log("Comando:", command);
+
+            // GESTIÓN DE ESTADO DEL SISTEMA
+            if (command.includes("activar sistema")) {
                 systemActive = true;
-                document.getElementById('status-dot').classList.add('online');
-                document.getElementById('status-text').innerText = "Sistema Online - Te escucho";
+                statusDot.classList.add('online');
+                statusText.innerText = "Sistema Online";
+                return;
+            }
+            if (command.includes("apagar sistema")) {
+                systemActive = false;
+                statusDot.classList.remove('online');
+                statusText.innerText = "Sistema Offline";
                 return;
             }
 
             if (!systemActive) return;
 
-            // COMANDOS DE SCROLL
-            if (result.includes("baja")) {
-                const container = document.getElementById('main-content');
-                container.scrollBy(0, window.innerHeight * 0.7);
+            // 1. SCROLL
+            if (command.includes("baja")) {
+                document.getElementById('main-content').scrollBy(0, window.innerHeight * 0.7);
             }
-            if (result.includes("sube")) {
-                const container = document.getElementById('main-content');
-                container.scrollBy(0, -(window.innerHeight * 0.7));
+            if (command.includes("sube")) {
+                document.getElementById('main-content').scrollBy(0, -(window.innerHeight * 0.7));
             }
 
-            // COMANDOS DE COMPRA
-            if (result.includes("comprar")) {
-                const num = result.match(/\d+/); // Busca cualquier número en la frase
-                if (num) {
-                    const card = document.getElementById(`p-${num[0]}`);
-                    if (card) {
-                        card.style.borderColor = "#00ffcc";
-                        alert(`🛒 Producto ${num[0]} comprado con éxito.`);
+            // 2. NAVEGACIÓN SIDEBAR DINÁMICA ("Ir a...")
+            if (command.includes("ir a")) {
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => {
+                    if (command.includes(item.innerText.toLowerCase())) {
+                        menuItems.forEach(m => m.classList.remove('active'));
+                        item.classList.add('active');
+                        document.getElementById('view-title').innerText = "Sección: " + item.innerText;
+                        document.getElementById('main-content').scrollTop = 0;
                     }
-                }
+                });
+            }
+
+            // 3. CLIC UNIVERSAL ("Clic en...")
+            // Si dices "clic en ofertas", buscará un botón que diga "ofertas"
+            if (command.includes("clic en") || command.includes("click en")) {
+                const targetText = command.replace(/clic en|click en/g, "").trim();
+                const allElements = document.querySelectorAll('button, a, .menu-item, .product-card');
+                
+                allElements.forEach(el => {
+                    if (el.innerText.toLowerCase().includes(targetText) && targetText !== "") {
+                        el.click(); // Ejecuta el click real
+                        el.style.outline = "2px solid #00ffcc"; // Feedback visual
+                        setTimeout(() => el.style.outline = "none", 1000);
+                    }
+                });
             }
         };
 
-        // Si el navegador intenta cerrarlo, lo reiniciamos al instante sin sonido
-        recognition.onend = () => {
-            recognition.start();
-        };
-
-        recognition.onerror = (event) => {
-            console.error("Error de voz:", event.error);
-        };
-
+        // Mantener el micrófono abierto sin ruidos de reinicio
+        recognition.onend = () => recognition.start();
     </script>
 </body>
 </html>
